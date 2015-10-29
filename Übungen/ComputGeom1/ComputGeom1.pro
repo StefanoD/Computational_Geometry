@@ -18,6 +18,6 @@ SOURCES +=  main.cpp \
 HEADERS +=  mainwindow.h \
             ViewEventHandler.h \
             glwidget.h \
-            qpointf_comparator.h
+    graham_comparator.h
 
 FORMS   += mainwindow.ui

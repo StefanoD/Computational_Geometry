@@ -7,7 +7,7 @@
 
 #include "glwidget.h"
 #include "mainwindow.h"
-#include "qpointf_comparator.h"
+#include "graham_comparator.h"
 
 
 GLWidget::GLWidget(QWidget *parent) : QGLWidget(parent)
@@ -79,6 +79,41 @@ QPointF GLWidget::transformPosition(const QPoint &p)
                     -(2.0*p.y()/height() - 1.0)*aspecty);
 }
 
+double GLWidget::getScalarProduct(const QPointF &lineSeg1,
+                                  const QPointF &lineSeg2)
+{
+    const QPointF transpLineSeg1 = transposePosition(lineSeg1);
+
+    const double scalarProduct = transpLineSeg1.x() * lineSeg2.x() +
+                                 transpLineSeg1.y() * lineSeg2.y();
+
+    return scalarProduct;
+}
+
+double GLWidget::getAngleRad(const QPointF &p1,
+                             const QPointF &p2,
+                             const QPointF &p3)
+{
+    const QPointF p2p1 = QPointF(p2.x() - p1.x(),
+                                 p2.y() - p1.y());
+
+    const QPointF p3p1 = QPointF(p3.x() - p1.x(),
+                                 p3.y() - p1.y());
+
+    const double scalarProduct = getScalarProduct(p2p1, p3p1);
+
+    const double lengthP2P1 = qSqrt(p2p1.x() * p2p1.x() +
+                                    p2p1.y() * p2p1.y());
+
+    const double lengthP3P1 = qSqrt(p3p1.x() * p3p1.x() +
+                                    p3p1.y() * p3p1.y());
+
+    const double angleRad = qAcos( scalarProduct /
+                            (lengthP2P1 * lengthP3P1));
+
+    return angleRad;
+}
+
 QPointF GLWidget::transposePosition(const QPointF &p)
 {
     return QPointF( p.y(),
@@ -97,29 +132,41 @@ bool GLWidget::isLeftTurn(std::vector<QPointF> &points)
     const QPointF p3p1 = QPointF(p3.x() - p1.x(),
                                  p3.y() - p1.y());
 
-    const QPointF transpP2P1 = transposePosition(p2p1);
+    // Für Graham-Scan:
+    // <= statt <, um kolineare Punkte zu überspringen
+    return getScalarProduct(p2p1, p3p1) <= 0;
+}
 
-    const float scalarProduct = transpP2P1.x() * p3p1.x() +
-                                transpP2P1.y() * p3p1.y();
+bool GLWidget::isLeftTurn(const QPointF &lineSeg1, const QPointF &lineSeg2)
+{
+    return getScalarProduct(lineSeg1, lineSeg2) < 0;
+}
 
-    return scalarProduct <= 0;
+QPointF GLWidget::getLeftMostPoint()
+{
+    QPointF leftMostPoint;
+
+    for (auto &point : points) {
+         if (point.x() < leftMostPoint.x()) {
+            leftMostPoint = point;
+        }
+    }
+
+    return leftMostPoint;
 }
 
 std::vector<QPointF> GLWidget::grahamScan()
 {
     // Sortierung
     std::vector<QPointF> sortedPoints = points;
-    std::sort(sortedPoints.begin(), sortedPoints.end(), QPointFComparator());
+    std::sort(sortedPoints.begin(), sortedPoints.end(), GrahamComparator());
 
     // Obere Hülle berechnen
 
     // Die ersten beiden Punkte in Liste einfügen
     std::vector<QPointF> hull = { sortedPoints[0], sortedPoints[1] };
 
-    for (std::vector<QPointF>::iterator it = sortedPoints.begin() + 2;
-         it < sortedPoints.end();
-         ++it)
-    {
+    for (auto it = sortedPoints.begin() + 2; it < sortedPoints.end(); ++it) {
         QPointF &p = *it;
 
         hull.push_back(p);
@@ -135,10 +182,7 @@ std::vector<QPointF> GLWidget::grahamScan()
     std::vector<QPointF> lowerHull = { sortedPoints[points.size() - 1],
                                        sortedPoints[points.size() - 2] };
 
-    for (std::vector<QPointF>::iterator it = sortedPoints.end() - 2;
-         it >= sortedPoints.begin();
-         --it)
-    {
+    for (auto it = sortedPoints.end() - 2; it >= sortedPoints.begin(); --it) {
         QPointF &p = *it;
 
         lowerHull.push_back(p);
@@ -156,6 +200,40 @@ std::vector<QPointF> GLWidget::grahamScan()
     hull.insert(hull.end(), lowerHull.begin(), lowerHull.end());
 
     return hull;
+}
+
+std::vector<QPointF> GLWidget::JarvisScan()
+{
+    QPointF pointOnHull = getLeftMostPoint();
+    std::vector<QPointF> convexHull;
+
+    // So etwas ähnliches wie eine Gerade durch den ersten Punkt
+    QPointF endpoint = QPointF(-1, pointOnHull.y());
+
+    do {
+        convexHull.push_back(pointOnHull);
+        endpoint = points[0];
+
+        for (auto it = points.begin() + 1; it < points.end(); ++it) {
+            QPointF &lastPointOnHull = convexHull.back();
+            QPointF &q = *it;
+
+            QPointF lineSeg1 = QPointF(endpoint.x() - lastPointOnHull.x(),
+                                         endpoint.y() - lastPointOnHull.y());
+
+            QPointF lineSeg2 = QPointF(q.x() - lastPointOnHull.x(),
+                                  q.y() - lastPointOnHull.y());
+
+            if (endpoint == pointOnHull || isLeftTurn(lineSeg1, lineSeg2)) {
+                endpoint = q;
+            }
+        }
+
+        pointOnHull = endpoint;
+
+    } while (endpoint != convexHull[0]);
+
+    return convexHull;
 }
 
 void GLWidget::keyPressEvent(QKeyEvent * event)
@@ -181,7 +259,15 @@ void GLWidget::drawConvexHull()
 {
     if (points.size() < 2) return;
 
-    std::vector<QPointF> hull = grahamScan();
+    std::vector<QPointF> hull;
+
+    if (doGrahamScan) {
+        hull = grahamScan();
+    } else if (doJarvisScan) {
+        hull = JarvisScan();
+    } else {
+        return;
+    }
 
     // Konvexe Hülle zeichnen
     glBegin(GL_LINE_STRIP);
@@ -199,14 +285,18 @@ void GLWidget::drawConvexHull()
 }
 
 
-void GLWidget::radioButton1Clicked()
+void GLWidget::radioButtonGrahamClicked()
 {
-    // TODO: toggle to Jarvis' march
+    doGrahamScan = true;
+    doJarvisScan = false;
+
     update();
 }
 
-void GLWidget::radioButton2Clicked()
+void GLWidget::radioButtonJarvisClicked()
 {
-    // TODO: toggle to Graham's scan
+    doGrahamScan = false;
+    doJarvisScan = true;
+
     update();
 }

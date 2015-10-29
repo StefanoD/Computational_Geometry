@@ -1,17 +1,17 @@
 #include "mainwindow.h"
 
 MainWindow::MainWindow(QWidget *parent)
-	: QMainWindow(parent), ui(new Ui::MainWindowClass)
+    : QMainWindow(parent), ui(new Ui::MainWindowClass)
 {
-	ui->setupUi(this);
-	ui->glwidget->setFocusPolicy(Qt::StrongFocus);
-	QObject::connect(ui->radioButton_1,&QRadioButton::clicked,ui->glwidget,&GLWidget::radioButton1Clicked);  
-	QObject::connect(ui->radioButton_2,&QRadioButton::clicked,ui->glwidget,&GLWidget::radioButton2Clicked); 
+    ui->setupUi(this);
+    ui->glwidget->setFocusPolicy(Qt::StrongFocus);
+    QObject::connect(ui->radioButtonGraham,&QRadioButton::clicked,ui->glwidget,&GLWidget::radioButtonGrahamClicked);
+    QObject::connect(ui->radioButtonJarvis,&QRadioButton::clicked,ui->glwidget,&GLWidget::radioButtonJarvisClicked);
 
 }
 
 MainWindow::~MainWindow()
 {
-	delete ui;
+    delete ui;
 }
 

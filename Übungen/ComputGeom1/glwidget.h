@@ -20,8 +20,8 @@ public:
 signals:
     void continueRequest      ();
 public slots:
-    void radioButton1Clicked  ();
-    void radioButton2Clicked  ();
+    void radioButtonGrahamClicked  ();
+    void radioButtonJarvisClicked  ();
 protected:
     void paintGL              ();
     void initializeGL         ();
@@ -31,12 +31,28 @@ protected:
 
     void drawConvexHull       ();
 private:
+    bool doJarvisScan = false;
+    bool doGrahamScan = false;
+
     QPointF transformPosition (const QPoint &p);
+
+    double getScalarProduct      (const QPointF &lineSeg1,
+                                  const QPointF &lineSeg2);
+
+    double getAngleRad           (const QPointF &p1,
+                               const QPointF &p2,
+                               const QPointF &p3);
+
     QPointF transposePosition (const QPointF &p);
 
-    bool isLeftTurn          (std::vector<QPointF> &points);
+    bool isLeftTurn           (std::vector<QPointF> &points);
+    bool isLeftTurn           (const QPointF &lineSeg1,
+                               const QPointF &lineSeg2);
+
+    QPointF getLeftMostPoint        ();
 
     std::vector<QPointF> grahamScan();
+    std::vector<QPointF> JarvisScan();
 
     std::vector<QPointF> points;
 

@@ -18,7 +18,6 @@ SOURCES +=  main.cpp \
 HEADERS +=  mainwindow.h \
             ViewEventHandler.h \
             glwidget.h \
-    graham_comparator.h \
     isosegment.h \
     event.h
 

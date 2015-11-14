@@ -6,13 +6,10 @@
 #include <algorithm>
 
 #include <memory>
-#include <assert.h>
-
 #include <map>
 
 #include "glwidget.h"
 #include "mainwindow.h"
-#include "graham_comparator.h"
 #include "isosegment.h"
 
 
@@ -121,34 +118,6 @@ bool GLWidget::isHorizontalSegment(const QPointF &p1, const QPointF &p2)
     return degree < 45 || degree > 135;
 }
 
-QPointF GLWidget::getOrthognalProjection(const QPointF &p)
-{
-    return QPointF( p.y(),
-                   -p.x());
-}
-
-bool GLWidget::isLeftTurn(std::vector<QPointF> &points)
-{
-    const QPointF &p1 = points[points.size() - 3];
-    const QPointF &p2 = points[points.size() - 2];
-    const QPointF &p3 = points[points.size() - 1];
-
-    const QPointF p2p1 = QPointF(p2.x() - p1.x(),
-                                 p2.y() - p1.y());
-
-    const QPointF p3p1 = QPointF(p3.x() - p1.x(),
-                                 p3.y() - p1.y());
-
-    // Für Graham-Scan:
-    // <= statt <, um kolineare Punkte zu überspringen
-    return getScalarProduct(p2p1, p3p1) <= 0;
-}
-
-bool GLWidget::isLeftTurn(const QPointF &lineSeg1, const QPointF &lineSeg2)
-{
-    return getScalarProduct(lineSeg1, lineSeg2) < 0;
-}
-
 void GLWidget::keyPressEvent(QKeyEvent * event)
 {
     switch (event->key()) {
@@ -235,11 +204,11 @@ void GLWidget::drawSegmentsIntersections()
         }
         else
         {
-            double yLower = qMin(event.isoSeg->p1.y(), event.isoSeg->p2.y());
+            double yVerticalLower = qMin(event.isoSeg->p1.y(), event.isoSeg->p2.y());
 
             // Suche kleinstes Element das größer als y ist
             // O(log n)
-            auto itGreaterThan = activeSegments.upper_bound(yLower);
+            auto itGreaterThan = activeSegments.upper_bound(yVerticalLower);
 
             // Nichts gefunden
             if (itGreaterThan == activeSegments.end()) continue;
@@ -255,18 +224,18 @@ void GLWidget::drawSegmentsIntersections()
                 --itGreaterThan;
             }
 
-            const double yUpper = qMax(event.isoSeg->p1.y(), event.isoSeg->p2.y());
-            const double xVerticalSeg = event.isoSeg->p1.x();
+            const double yVerticalUpper = qMax(event.isoSeg->p1.y(), event.isoSeg->p2.y());
+            const double xVertical = event.isoSeg->p1.x();
 
             glBegin( GL_POINTS );
             glColor4f( 1.0, 1.0f, 0.0f, 1.0f );
 
             for (; itGreaterThan != activeSegments.end(); ++itGreaterThan) {
-                auto segment = itGreaterThan->second;
+                auto horizontalSegment = itGreaterThan->second;
 
-                if (segment->p1.y() <= yUpper)
+                if (horizontalSegment->p1.y() <= yVerticalUpper)
                 {
-                    glVertex2f( xVerticalSeg, segment->p1.y() );
+                    glVertex2f( xVertical, horizontalSegment->p1.y() );
                 }
                 else
                 {

@@ -37,12 +37,6 @@ private:
 
     bool isHorizontalSegment     (const QPointF &p1, const QPointF &p2);
 
-    QPointF getOrthognalProjection (const QPointF &p);
-
-    bool isLeftTurn           (std::vector<QPointF> &points);
-    bool isLeftTurn           (const QPointF &lineSeg1,
-                               const QPointF &lineSeg2);
-
     std::vector<QPointF> points;
     std::vector<std::shared_ptr<IsoSegment>> segments;
     std::vector<Event> events;

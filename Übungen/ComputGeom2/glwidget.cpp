@@ -8,6 +8,8 @@
 #include <memory>
 #include <assert.h>
 
+#include <map>
+
 #include "glwidget.h"
 #include "mainwindow.h"
 #include "graham_comparator.h"
@@ -214,22 +216,65 @@ void GLWidget::drawSegments()
 
 void GLWidget::drawSegmentsIntersections()
 {
-    std::vector<std::shared_ptr<IsoSegment>> activeSegments;
+    std::map<double, std::shared_ptr<IsoSegment>> activeSegments;
 
     std::sort(events.begin(), events.end());
 
-    for (auto &event : events) {
-        qDebug() << event.x << ", ";
+    for (auto &event : events)
+    {
+        // Key bei horizontalen Linien --> yLower == yUpper
+        const double y = event.isoSeg->p1.y();
 
-        if (event.eventType == START_EVENT) {
-            activeSegments.push_back(event.isoSeg);
-            std::push_heap (activeSegments.begin(), activeSegments.end());
-        } else if (event.eventType == END_EVENT) {
+        if (event.eventType == START_EVENT)
+        {
+            activeSegments[y] = event.isoSeg;
+        }
+        else if (event.eventType == END_EVENT)
+        {
+            activeSegments.erase(y);
+        }
+        else
+        {
+            double yLower = qMin(event.isoSeg->p1.y(), event.isoSeg->p2.y());
 
-        } else {
+            // Suche kleinstes Element das größer als y ist
+            // O(log n)
+            auto itGreaterThan = activeSegments.upper_bound(yLower);
 
+            // Nichts gefunden
+            if (itGreaterThan == activeSegments.end()) continue;
+
+            // Für <= Operator um eins dekrementieren und auf Gleichheit testen
+            auto itPrev = itGreaterThan;
+            --itPrev;
+
+            const double prevY = itPrev->second->p1.y();
+
+            if (itGreaterThan != activeSegments.begin() && prevY == y ) {
+                // Größer-Gleich-Iterator
+                --itGreaterThan;
+            }
+
+            const double yUpper = qMax(event.isoSeg->p1.y(), event.isoSeg->p2.y());
+            const double xVerticalSeg = event.isoSeg->p1.x();
+
+            glBegin( GL_POINTS );
+            glColor4f( 1.0, 1.0f, 0.0f, 1.0f );
+
+            for (; itGreaterThan != activeSegments.end(); ++itGreaterThan) {
+                auto segment = itGreaterThan->second;
+
+                if (segment->p1.y() <= yUpper)
+                {
+                    glVertex2f( xVerticalSeg, segment->p1.y() );
+                }
+                else
+                {
+                    break;
+                }
+            }
+
+            glEnd();
         }
     }
-
-    qDebug() << endl;
 }

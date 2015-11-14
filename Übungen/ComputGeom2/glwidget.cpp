@@ -6,6 +6,7 @@
 #include <algorithm>
 
 #include <memory>
+#include <assert.h>
 
 #include "glwidget.h"
 #include "mainwindow.h"
@@ -44,8 +45,10 @@ void GLWidget::paintGL()
     }
     glEnd();
 
-    // Konvexe Hülle zeichnen
+    // Linien zeichnen
     drawSegments();
+
+    drawSegmentsIntersections();
 }
 
 
@@ -177,20 +180,14 @@ void GLWidget::mousePressEvent(QMouseEvent *event)
 
                 // Start- und End-Event in Heap-Struktur einfügen
                 events.push_back(Event(firstPoint.rx(), START_EVENT, isoSeg));
-                std::push_heap (events.begin(), events.end());
-
                 events.push_back(Event(posF.rx(), END_EVENT, isoSeg));
-                std::push_heap (events.begin(), events.end());
             } else {
                 // Vertikal: Erster und zweiter Punkt haben selbe X-Position
                 posF.rx() = firstPoint.rx();
 
                 // ISO-Segment auf dem Heap-Speicher erstellen
                 isoSeg = std::make_shared<IsoSegment>(firstPoint, posF);
-
-                // Vertikal-Event in Heap-Struktur einfügen
                 events.push_back(Event(posF.rx(), VERTICAL, isoSeg));
-                std::push_heap (events.begin(), events.end());
             }
 
             segments.push_back(isoSeg);
@@ -213,4 +210,26 @@ void GLWidget::drawSegments()
 
         glEnd();
     }
+}
+
+void GLWidget::drawSegmentsIntersections()
+{
+    std::vector<std::shared_ptr<IsoSegment>> activeSegments;
+
+    std::sort(events.begin(), events.end());
+
+    for (auto &event : events) {
+        qDebug() << event.x << ", ";
+
+        if (event.eventType == START_EVENT) {
+            activeSegments.push_back(event.isoSeg);
+            std::push_heap (activeSegments.begin(), activeSegments.end());
+        } else if (event.eventType == END_EVENT) {
+
+        } else {
+
+        }
+    }
+
+    qDebug() << endl;
 }

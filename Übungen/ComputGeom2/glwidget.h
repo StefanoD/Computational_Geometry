@@ -28,7 +28,6 @@ protected:
     void keyPressEvent        (QKeyEvent   *event);
     void mousePressEvent      (QMouseEvent *event);
 
-    void drawSegments       ();
 private:
 
     QPointF transformPosition (const QPoint &p);
@@ -54,6 +53,9 @@ private:
 
     bool getFirstPoint = true;
     bool getSecondPoint = false;
+
+    void drawSegments       ();
+    void drawSegmentsIntersections();
 };
 
 

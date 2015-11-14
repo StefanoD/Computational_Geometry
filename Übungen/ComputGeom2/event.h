@@ -9,7 +9,7 @@ enum EventType { START_EVENT, END_EVENT, VERTICAL };
 class Event {
 
 public:
-  Event(const int _x,
+  Event(const double _x,
         const EventType _eventType,
         const std::shared_ptr<IsoSegment> _isoSeg):
         x(_x),
@@ -17,7 +17,7 @@ public:
         isoSeg(_isoSeg) {}
 
   // Die X-Koordinate eines Events ist der Key
-  int x;
+  double x;
   EventType eventType;
   std::shared_ptr<IsoSegment> isoSeg;
 

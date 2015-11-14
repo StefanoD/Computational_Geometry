@@ -10,6 +10,7 @@
 #include <QGLWidget>
 #include <QFuture>
 #include <vector>
+#include "event.h"
 
 class GLWidget : public QGLWidget
 {
@@ -19,9 +20,7 @@ public:
     ~GLWidget                 ();
 signals:
     void continueRequest      ();
-public slots:
-    void radioButtonGrahamClicked  ();
-    void radioButtonJarvisClicked  ();
+
 protected:
     void paintGL              ();
     void initializeGL         ();
@@ -29,30 +28,32 @@ protected:
     void keyPressEvent        (QKeyEvent   *event);
     void mousePressEvent      (QMouseEvent *event);
 
-    void drawConvexHull       ();
+    void drawSegments       ();
 private:
-    bool doJarvisScan = false;
-    bool doGrahamScan = false;
 
     QPointF transformPosition (const QPoint &p);
 
     double getScalarProduct      (const QPointF &lineSeg1,
                                   const QPointF &lineSeg2);
 
-    QPointF transposePosition (const QPointF &p);
+    bool isHorizontalSegment     (const QPointF &p1, const QPointF &p2);
+
+    QPointF getOrthognalProjection (const QPointF &p);
 
     bool isLeftTurn           (std::vector<QPointF> &points);
     bool isLeftTurn           (const QPointF &lineSeg1,
                                const QPointF &lineSeg2);
 
-    QPointF getLeftMostPoint        ();
-
-    std::vector<QPointF> grahamScan();
-    std::vector<QPointF> JarvisScan();
-
     std::vector<QPointF> points;
+    std::vector<std::shared_ptr<IsoSegment>> segments;
+    std::vector<Event> events;
 
     double  aspectx, aspecty;
+
+    QPointF firstPoint;
+
+    bool getFirstPoint = true;
+    bool getSecondPoint = false;
 };
 
 

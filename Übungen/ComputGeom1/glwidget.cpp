@@ -90,32 +90,9 @@ double GLWidget::getScalarProduct(const QPointF &lineSeg1,
     return scalarProduct;
 }
 
-double GLWidget::getAngleRad(const QPointF &p1,
-                             const QPointF &p2,
-                             const QPointF &p3)
-{
-    const QPointF p2p1 = QPointF(p2.x() - p1.x(),
-                                 p2.y() - p1.y());
-
-    const QPointF p3p1 = QPointF(p3.x() - p1.x(),
-                                 p3.y() - p1.y());
-
-    const double scalarProduct = getScalarProduct(p2p1, p3p1);
-
-    const double lengthP2P1 = qSqrt(p2p1.x() * p2p1.x() +
-                                    p2p1.y() * p2p1.y());
-
-    const double lengthP3P1 = qSqrt(p3p1.x() * p3p1.x() +
-                                    p3p1.y() * p3p1.y());
-
-    const double angleRad = qAcos( scalarProduct /
-                            (lengthP2P1 * lengthP3P1));
-
-    return angleRad;
-}
-
 QPointF GLWidget::transposePosition(const QPointF &p)
 {
+    // Zusätzlich orthogonal!
     return QPointF( p.y(),
                    -p.x());
 }
@@ -147,7 +124,7 @@ QPointF GLWidget::getLeftMostPoint()
     QPointF leftMostPoint;
 
     for (auto &point : points) {
-         if (point.x() < leftMostPoint.x()) {
+        if (point.x() < leftMostPoint.x()) {
             leftMostPoint = point;
         }
     }
@@ -206,9 +183,7 @@ std::vector<QPointF> GLWidget::JarvisScan()
 {
     QPointF pointOnHull = getLeftMostPoint();
     std::vector<QPointF> convexHull;
-
-    // So etwas ähnliches wie eine Gerade durch den ersten Punkt
-    QPointF endpoint = QPointF(-1, pointOnHull.y());
+    QPointF endpoint;
 
     do {
         convexHull.push_back(pointOnHull);
@@ -219,10 +194,10 @@ std::vector<QPointF> GLWidget::JarvisScan()
             QPointF &q = *it;
 
             QPointF lineSeg1 = QPointF(endpoint.x() - lastPointOnHull.x(),
-                                         endpoint.y() - lastPointOnHull.y());
+                                       endpoint.y() - lastPointOnHull.y());
 
             QPointF lineSeg2 = QPointF(q.x() - lastPointOnHull.x(),
-                                  q.y() - lastPointOnHull.y());
+                                       q.y() - lastPointOnHull.y());
 
             if (endpoint == pointOnHull || isLeftTurn(lineSeg1, lineSeg2)) {
                 endpoint = q;

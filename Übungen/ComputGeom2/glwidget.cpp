@@ -145,8 +145,8 @@ void GLWidget::mousePressEvent(QMouseEvent *event)
         QPointF clickedPoint = transformPosition(event->pos());
 
         if (getFirstPoint) {
+            getFirstPoint = false;
             lastPoint = clickedPoint;
-            getFirstPoint = false;;
         } else {
             getFirstPoint = true;
 
@@ -162,7 +162,7 @@ void GLWidget::mousePressEvent(QMouseEvent *event)
                 // ISO-Segment auf dem Heap-Speicher erstellen
                 isoSeg = std::make_shared<IsoSegment>(leftPoint, rightPoint);
 
-                // Start- und End-Event in Heap-Struktur einfügen
+                // Start- und End-Event in Vector einfügen
                 events.push_back(Event(leftPoint.rx (), START_EVENT, isoSeg));
                 events.push_back(Event(rightPoint.rx(), END_EVENT  , isoSeg));
             } else {

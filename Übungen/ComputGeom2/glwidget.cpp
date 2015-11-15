@@ -113,7 +113,7 @@ bool GLWidget::isHorizontalSegment(const QPointF &p1, const QPointF &p2)
     const double magnitudeSeg2 = qSqrt(p2p1.x() * p2p1.x() + p2p1.y() * p2p1.y());
 
     const double degree = qAcos( scalarProduct / (magnitudeSeg1 * magnitudeSeg2) ) *
-                          180 / 3.14185;
+                          180 / M_PI;
 
     return degree < 45 || degree > 135;
 }

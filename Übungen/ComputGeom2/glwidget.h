@@ -36,6 +36,8 @@ private:
                                   const QPointF &lineSeg2);
 
     bool isHorizontalSegment     (const QPointF &p1, const QPointF &p2);
+    QPointF getLeftPoint         (const QPointF &p1, const QPointF &p2);
+    QPointF getRightPoint        (const QPointF &p1, const QPointF &p2);
 
     std::vector<QPointF> points;
     std::vector<std::shared_ptr<IsoSegment>> segments;
@@ -43,7 +45,7 @@ private:
 
     double  aspectx, aspecty;
 
-    QPointF firstPoint;
+    QPointF lastPoint;
 
     bool getFirstPoint = true;
     bool getSecondPoint = false;

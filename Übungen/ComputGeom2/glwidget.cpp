@@ -118,6 +118,18 @@ bool GLWidget::isHorizontalSegment(const QPointF &p1, const QPointF &p2)
     return degree < 45 || degree > 135;
 }
 
+QPointF GLWidget::getLeftPoint(const QPointF &p1, const QPointF &p2)
+{
+    if (p1.x() < p2.x()) return p1;
+    return p2;
+}
+
+QPointF GLWidget::getRightPoint(const QPointF &p1, const QPointF &p2)
+{
+    if (p1.x() > p2.x()) return p1;
+    return p2;
+}
+
 void GLWidget::keyPressEvent(QKeyEvent * event)
 {
     switch (event->key()) {
@@ -130,10 +142,10 @@ void GLWidget::keyPressEvent(QKeyEvent * event)
 void GLWidget::mousePressEvent(QMouseEvent *event)
 {
     if (event->buttons() & Qt::LeftButton ) {
-        QPointF posF = transformPosition(event->pos());
+        QPointF clickedPoint = transformPosition(event->pos());
 
         if (getFirstPoint) {
-            firstPoint = posF;
+            lastPoint = clickedPoint;
             getFirstPoint = false;
             getSecondPoint = true;
         } else {
@@ -142,28 +154,31 @@ void GLWidget::mousePressEvent(QMouseEvent *event)
 
             std::shared_ptr<IsoSegment> isoSeg;
 
-            if (isHorizontalSegment(firstPoint, posF)) {
-                // Horizontal: Erster und zweiter Punkt haben selbe Y-Position
-                posF.ry() = firstPoint.ry();
+            if (isHorizontalSegment(lastPoint, clickedPoint)) {
+                // Horizontal: Gleiche Y-Position an
+                clickedPoint.ry() = lastPoint.ry();
+
+                QPointF leftPoint = getLeftPoint(clickedPoint, lastPoint);
+                QPointF rightPoint = getRightPoint(clickedPoint, lastPoint);
 
                 // ISO-Segment auf dem Heap-Speicher erstellen
-                isoSeg = std::make_shared<IsoSegment>(firstPoint, posF);
+                isoSeg = std::make_shared<IsoSegment>(leftPoint, rightPoint);
 
                 // Start- und End-Event in Heap-Struktur einfügen
-                events.push_back(Event(firstPoint.rx(), START_EVENT, isoSeg));
-                events.push_back(Event(posF.rx(), END_EVENT, isoSeg));
+                events.push_back(Event(leftPoint.rx (), START_EVENT, isoSeg));
+                events.push_back(Event(rightPoint.rx(), END_EVENT  , isoSeg));
             } else {
-                // Vertikal: Erster und zweiter Punkt haben selbe X-Position
-                posF.rx() = firstPoint.rx();
+                // Vertikal: Gleiche X-Position an
+                clickedPoint.rx() = lastPoint.rx();
 
                 // ISO-Segment auf dem Heap-Speicher erstellen
-                isoSeg = std::make_shared<IsoSegment>(firstPoint, posF);
-                events.push_back(Event(posF.rx(), VERTICAL, isoSeg));
+                isoSeg = std::make_shared<IsoSegment>(lastPoint, clickedPoint);
+                events.push_back(Event(clickedPoint.rx(), VERTICAL, isoSeg));
             }
 
             segments.push_back(isoSeg);
         }
-        points.push_back(posF);
+        points.push_back(clickedPoint);
     }
 
     update();
@@ -176,8 +191,8 @@ void GLWidget::drawSegments()
     for (auto &segment : segments) {
         glBegin(GL_LINE_STRIP);
 
-        glVertex2f( segment->p1.x(), segment->p1.y() );
-        glVertex2f( segment->p2.x(), segment->p2.y() );
+        glVertex2f( segment->pLeft.x(), segment->pLeft.y() );
+        glVertex2f( segment->pRight.x(), segment->pRight.y() );
 
         glEnd();
     }
@@ -192,7 +207,7 @@ void GLWidget::drawSegmentsIntersections()
     for (auto &event : events)
     {
         // Key bei horizontalen Linien --> yLower == yUpper
-        const double y = event.isoSeg->p1.y();
+        const double y = event.isoSeg->pLeft.y();
 
         if (event.eventType == START_EVENT)
         {
@@ -204,7 +219,7 @@ void GLWidget::drawSegmentsIntersections()
         }
         else
         {
-            double yVerticalLower = qMin(event.isoSeg->p1.y(), event.isoSeg->p2.y());
+            double yVerticalLower = qMin(event.isoSeg->pLeft.y(), event.isoSeg->pRight.y());
 
             // Suche kleinstes Element das größer als y ist
             // O(log n)
@@ -217,15 +232,15 @@ void GLWidget::drawSegmentsIntersections()
             auto itPrev = itGreaterThan;
             --itPrev;
 
-            const double prevY = itPrev->second->p1.y();
+            const double prevY = itPrev->second->pLeft.y();
 
             if (itGreaterThan != activeSegments.begin() && prevY == y ) {
                 // Größer-Gleich-Iterator
                 --itGreaterThan;
             }
 
-            const double yVerticalUpper = qMax(event.isoSeg->p1.y(), event.isoSeg->p2.y());
-            const double xVertical = event.isoSeg->p1.x();
+            const double yVerticalUpper = qMax(event.isoSeg->pLeft.y(), event.isoSeg->pRight.y());
+            const double xVertical = event.isoSeg->pLeft.x();
 
             glBegin( GL_POINTS );
             glColor4f( 1.0, 1.0f, 0.0f, 1.0f );
@@ -233,9 +248,10 @@ void GLWidget::drawSegmentsIntersections()
             for (; itGreaterThan != activeSegments.end(); ++itGreaterThan) {
                 auto horizontalSegment = itGreaterThan->second;
 
-                if (horizontalSegment->p1.y() <= yVerticalUpper)
+                // Schnittpunkt zeichnen
+                if (horizontalSegment->pLeft.y() <= yVerticalUpper)
                 {
-                    glVertex2f( xVertical, horizontalSegment->p1.y() );
+                    glVertex2f( xVertical, horizontalSegment->pLeft.y() );
                 }
                 else
                 {

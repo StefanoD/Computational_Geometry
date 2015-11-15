@@ -10,16 +10,16 @@
 class IsoSegment {
 
 public:
-  IsoSegment(const QPointF &_p1, const QPointF &_p2) :
-      p1(_p1), p2(_p2) {}
+  IsoSegment(const QPointF &_pLeft, const QPointF &_pRight) :
+      pLeft(_pLeft), pRight(_pRight) {}
 
-  const QPointF p1;
-  const QPointF p2;
+  const QPointF pLeft;
+  const QPointF pRight;
 
   // Kleiner-Ordnung
   bool operator < (const IsoSegment &seg) const
   {
-      return p1.y() < seg.p1.y();
+      return pLeft.y() < seg.pLeft.y();
   }
 };
 

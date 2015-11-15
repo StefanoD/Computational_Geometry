@@ -244,7 +244,7 @@ void GLWidget::drawSegmentsIntersections()
             glColor4f( 1.0, 1.0f, 0.0f, 1.0f );
 
             for (; itGreaterThan != activeSegments.end(); ++itGreaterThan) {
-                auto horizontalSegment = itGreaterThan->second;
+                std::shared_ptr<IsoSegment> horizontalSegment = itGreaterThan->second;
 
                 // Schnittpunkt zeichnen
                 if (horizontalSegment->pLeft.y() <= yVerticalUpper)

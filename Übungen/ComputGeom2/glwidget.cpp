@@ -217,7 +217,7 @@ void GLWidget::drawSegmentsIntersections()
         {
             activeSegments.erase(y);
         }
-        else
+        else // VERTICAL_EVENT
         {
             double yVerticalLower = qMin(event.isoSeg->pLeft.y(), event.isoSeg->pRight.y());
 
@@ -232,9 +232,7 @@ void GLWidget::drawSegmentsIntersections()
             auto itPrev = itGreaterThan;
             --itPrev;
 
-            const double prevY = itPrev->second->pLeft.y();
-
-            if (itGreaterThan != activeSegments.begin() && prevY == y ) {
+            if (itGreaterThan != activeSegments.begin() && itPrev->second->pLeft.y() == y ) {
                 // Größer-Gleich-Iterator
                 --itGreaterThan;
             }

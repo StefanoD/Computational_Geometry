@@ -146,11 +146,9 @@ void GLWidget::mousePressEvent(QMouseEvent *event)
 
         if (getFirstPoint) {
             lastPoint = clickedPoint;
-            getFirstPoint = false;
-            getSecondPoint = true;
+            getFirstPoint = false;;
         } else {
             getFirstPoint = true;
-            getSecondPoint = false;
 
             std::shared_ptr<IsoSegment> isoSeg;
 

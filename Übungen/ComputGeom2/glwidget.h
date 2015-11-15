@@ -48,7 +48,6 @@ private:
     QPointF lastPoint;
 
     bool getFirstPoint = true;
-    bool getSecondPoint = false;
 
     void drawSegments       ();
     void drawSegmentsIntersections();

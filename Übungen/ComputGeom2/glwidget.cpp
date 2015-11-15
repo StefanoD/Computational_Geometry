@@ -251,7 +251,7 @@ void GLWidget::drawSegmentsIntersections()
                 {
                     glVertex2f( xVertical, horizontalSegment->pLeft.y() );
                 }
-                else
+                else // yVerticalUpper überschritten
                 {
                     break;
                 }

@@ -226,7 +226,7 @@ void GLWidget::drawSegmentsIntersections()
             // Nichts gefunden
             if (itGreaterThan == activeSegments.end()) continue;
 
-            // Für <= Operator um eins dekrementieren und auf Gleichheit testen
+            // Für >= Operator um eins dekrementieren und auf Gleichheit testen
             auto itPrev = itGreaterThan;
             --itPrev;
 

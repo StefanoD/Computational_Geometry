@@ -10,6 +10,7 @@
 #include <QGLWidget>
 #include <QFuture>
 #include <vector>
+#include "avltree.h"
 
 class GLWidget : public QGLWidget
 {
@@ -39,13 +40,16 @@ private:
     QPointF getRightPoint        (const QPointF &p1, const QPointF &p2);
 
     std::vector<QPointF> points;
-    std::vector<int> xPoints;
+    std::vector<QPointF> xPoints;
+
+    AVLTree<QPointF> twoDTree;
 
     double  aspectx, aspecty;
 
     bool getFirstPoint = true;
 
     void drawPartitions       ();
+    void inOrder(AVLTree<QPointF>::Node *n, const QPointF& lastPos, const bool isVertical);
 };
 
 

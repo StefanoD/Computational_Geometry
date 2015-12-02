@@ -22,6 +22,7 @@
 #include <algorithm>
 #include <assert.h>
 #include <iterator>
+#include <functional>
 #include "lessxcomparator.h"
 #include "lessycomparator.h"
 #include "ymediancomparator.h"
@@ -30,7 +31,7 @@
 template <typename T>
 class AVLTree
 {
-private:
+public:
   class Node
   {
   public:
@@ -56,8 +57,8 @@ private:
 
   Node* root = nullptr;
 
-  std::vector<T>& x;
-  std::vector<T>& y;
+  std::vector<T>* x;
+  std::vector<T>* y;
 
   Node* insertR(T value, Node* p)
   {
@@ -135,15 +136,30 @@ private:
     }
   }
 
-  template < typename Compare >
-  void partitionField(std::vector<T>& field, int leftIndex, int rightIndex, Compare& comparator)
+  template < typename SortComparator >
+  void partitionField(std::vector<T>* field,
+                      const int leftIndex,
+                      const int medianIndex,
+                      const int rightIndex,
+                      const std::function<int(QPointF)>& medianCompare,
+                      const SortComparator sortCompare)
   {
-    auto left = std::forward(field.begin(), leftIndex);
+    auto leftIt = field->begin() + leftIndex;
 
-    // Ende ist bei std::sort() explizit, deshalb + 1
-    auto right = std::forward(field.begin(), rightIndex + 1);
+    auto medianIt = field->begin() + medianIndex;
 
-    std::sort(left, right, comparator);
+    //auto medianItPlusOne = field->begin() + medianIndex + 1;
+
+    // Ende ist bei std::partition() explizit, deshalb + 1
+    auto rightIt = field->begin() + rightIndex + 1;
+
+    std::partition(leftIt, rightIt, medianCompare);
+
+    // Nach der Partitionierung, muss innerhalb der Partitionierungen nochmals
+    // der Größe nach sortiert werden, damit später wieder der Median geholt
+    // werden kann, in dem man auf den halben Index zugreift.
+    std::sort(leftIt, medianIt, sortCompare);
+    std::sort(medianIt + 1, rightIt, sortCompare);
   }
 
   void constructBalanced2DTree(const int leftIndex, const int rightIndex,
@@ -151,37 +167,45 @@ private:
   {
     if (leftIndex <= rightIndex) {
       // +1 um aufzurunden
-      int median = (leftIndex + rightIndex + 1) / 2;
+      int medianIndex = (leftIndex + rightIndex + 1) / 2;
 
       if (isVertical) {
-        p->value = y[median];
-        partitionField(x, leftIndex, rightIndex, YMedianComparator(median));
+        QPointF median = (*y)[medianIndex];
+        p->value = median;
+
+        const auto compare = [median](const QPointF& point) {
+          return point.y() <= median.y();
+        };
+
+        partitionField(x, leftIndex, medianIndex, rightIndex, compare, LessXComparator());
       } else {
-        p->value = x[median];
-        partitionField(x, leftIndex, rightIndex, XMedianComparator(median));
+        QPointF median = (*x)[medianIndex];
+        p->value = median;
+
+        const auto compare = [median](const QPointF& point) {
+          return point.x() <= median.x();
+        };
+
+        partitionField(y, leftIndex, medianIndex, rightIndex, compare, LessYComparator());
       }
 
       p->left = new Node();
       p->right = new Node();
 
-      constructBalanced2DTree(leftIndex, median - 1, p->left, !isVertical);
-      constructBalanced2DTree(median + 1, rightIndex, p->right, !isVertical);
+      constructBalanced2DTree(leftIndex, medianIndex - 1, p->left, !isVertical);
+      constructBalanced2DTree(medianIndex + 1, rightIndex, p->right,
+                              !isVertical);
     }
   }
 
 public:
   ~AVLTree() { delete root; }
 
-  AVLTree(std::vector<T>& _x, std::vector<T>& _y)
-    : x(_x)
-    , y(_y)
+  AVLTree()
+    : root(new Node())
+    , x(nullptr)
+    , y(nullptr)
   {
-    std::sort(x, LessXComparator());
-    std::sort(y, LessYComparator());
-
-    root = new Node();
-
-    constructBalanced2DTree(0, x.size() - 1, root, true);
   }
 
   void clear()
@@ -190,13 +214,15 @@ public:
     root = nullptr;
   }
 
-  void insert(T value)
+  void insert(std::vector<T>* _x, std::vector<T>* _y)
   {
-    if (root == nullptr) {
-      root = new Node(value);
-    } else {
-      root = insertR(value, root);
-    }
+    x = _x;
+    y = _y;
+
+    std::sort(x->begin(), x->end(), LessXComparator());
+    std::sort(y->begin(), y->end(), LessYComparator());
+
+    constructBalanced2DTree(0, x->size() - 1, root, true);
   }
 
   bool contains(T value) { return contains(value, root); }

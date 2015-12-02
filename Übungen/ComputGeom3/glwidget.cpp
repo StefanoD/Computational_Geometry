@@ -143,17 +143,78 @@ void GLWidget::mousePressEvent(QMouseEvent *event)
         QPointF clickedPoint = transformPosition(event->pos());
 
         points.push_back(clickedPoint);
-        xPoints.push_back(clickedPoint.x());
     }
 
     update();
 }
 
+void GLWidget::inOrder(typename AVLTree<QPointF>::Node* n,
+                       const QPointF& lastPos, const bool isVertical) {
+    if ( n != nullptr ) {
+        inOrder(n->left, n->left->value, !isVertical);
+
+        if (isVertical) {
+            double leftX;
+            double rightX;
+
+            if ( n->value.x() < lastPos.x()) {
+                leftX = -1.0;
+            } else {
+                leftX = lastPos.x();
+            }
+
+            if ( n->value.x() > lastPos.x()) {
+                rightX = 1.0;
+            } else {
+                rightX = lastPos.x();
+            }
+
+            glBegin(GL_LINE_STRIP);
+
+            glVertex2f( leftX, n->value.y() );
+            glVertex2f( rightX, n->value.y() );
+
+            glEnd();
+       } else {
+            double lowerY;
+            double upperY;
+
+            if ( n->value.y() < lastPos.y()) {
+                lowerY = 1.0;
+            } else {
+                lowerY = lastPos.y();
+            }
+
+            if ( n->value.y() > lastPos.y()) {
+                upperY = -1.0;
+            } else {
+                upperY = lastPos.x();
+            }
+
+            glBegin(GL_LINE_STRIP);
+
+            glVertex2f( n->value.x(), lowerY );
+            glVertex2f( n->value.x(), upperY );
+
+            glEnd();
+       }
+
+       inOrder(n->right, n->right->value, !isVertical);
+    }
+}
+
+
 void GLWidget::drawPartitions()
 {
-
+    if (points.size() == 0) return;
 
     glColor4f( 0.0f, 0.407, 0.95f, 1.0f );
+
+    xPoints = points;
+
+    twoDTree.insert(&xPoints, &points);
+
+    inOrder(twoDTree.root, QPointF(1, 0), true);
 /*
     for (auto &segment : segments) {
         glBegin(GL_LINE_STRIP);

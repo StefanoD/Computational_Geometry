@@ -3,17 +3,18 @@
 
 #include <QPointF>
 
+//template < typename T >
 class XMedianComparator
 {
-  int xMedian;
+  QPointF xMedian;
 
 public:
-  XMedianComparator(int _xMedian)
+  XMedianComparator(QPointF _xMedian)
     : xMedian(_xMedian)
   {
   }
 
-  bool operator<(const QPointF point) { return xMedian <= point.x(); }
+  bool operator()(const QPointF point) { return xMedian.x() < point.x(); }
 };
 
 #endif // XMEDIANCOMPARATOR

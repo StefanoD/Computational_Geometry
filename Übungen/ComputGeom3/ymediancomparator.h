@@ -3,17 +3,18 @@
 
 #include <QPointF>
 
+//template < typename T >
 class YMedianComparator
 {
-  int yMedian;
+  QPointF yMedian;
 
 public:
-  YMedianComparator(int _yMedian)
+  YMedianComparator(QPointF _yMedian)
     : yMedian(_yMedian)
   {
   }
 
-  bool operator<(const QPointF point) { return yMedian <= point.y(); }
+  bool operator < (const QPointF point) const { return yMedian.y() < point.y(); }
 };
 
 #endif // YMEDIANCOMPARATOR

@@ -34,7 +34,6 @@ private:
   class Node
   {
   public:
-    int height = 0;
     T value;
 
     Node* left = nullptr;
@@ -59,22 +58,6 @@ private:
 
   std::vector<T>& x;
   std::vector<T>& y;
-
-  int getHeight(Node* p)
-  {
-    if (p == nullptr)
-      return -1;
-    else
-      return p->height;
-  }
-
-  int getBalance(Node* p)
-  {
-    if (p == nullptr)
-      return 0;
-    else
-      return getHeight(p->right) - getHeight(p->left);
-  }
 
   Node* insertR(T value, Node* p)
   {

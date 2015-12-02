@@ -40,7 +40,7 @@ private:
     Node* left = nullptr;
     Node* right = nullptr;
 
-    Node(T v)
+    Node(T v = T())
       : value(v)
     {
     }
@@ -263,6 +263,10 @@ public:
   {
     std::sort(x, LessXComparator());
     std::sort(y, LessYComparator());
+
+    root = new Node();
+
+    constructBalanced2DTree(0, x.size() - 1, root, true);
   }
 
   void clear()

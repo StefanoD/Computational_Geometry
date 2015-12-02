@@ -13,7 +13,7 @@ public:
   {
   }
 
-  bool operator<(const QPointF point) { return yMedian < point.y(); }
+  bool operator<(const QPointF point) { return yMedian <= point.y(); }
 };
 
 #endif // YMEDIANCOMPARATOR

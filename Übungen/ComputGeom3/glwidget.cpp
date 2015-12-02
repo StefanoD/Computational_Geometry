@@ -180,15 +180,15 @@ void GLWidget::inOrder(typename AVLTree<QPointF>::Node* n,
             double upperY;
 
             if ( n->value.y() < lastPos.y()) {
-                lowerY = 1.0;
-            } else {
                 lowerY = lastPos.y();
+            } else {
+                lowerY = 1.0;
             }
 
             if ( n->value.y() > lastPos.y()) {
-                upperY = -1.0;
-            } else {
                 upperY = lastPos.x();
+            } else {
+                upperY = -1.0;
             }
 
             glBegin(GL_LINE_STRIP);

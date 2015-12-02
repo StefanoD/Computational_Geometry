@@ -172,7 +172,7 @@ public:
         p->value = median;
 
         const auto compare = [median](const QPointF& point) {
-          return point.y() < median.y();
+          return point.y() <= median.y();
         };
 
         partitionField(x, leftIndex, medianIndex, rightIndex, compare,
@@ -182,7 +182,7 @@ public:
         p->value = median;
 
         const auto compare = [median](const QPointF& point) {
-          return point.x() < median.x();
+          return point.x() <= median.x();
         };
 
         partitionField(y, leftIndex, medianIndex, rightIndex, compare,

@@ -87,75 +87,7 @@ private:
       p->right = insertR(value, p->right);
     }
 
-    p = balance(p);
-
     return p;
-  }
-
-  Node* balance(Node* p)
-  {
-    if (p == nullptr)
-      return nullptr;
-
-    p->height = std::max(getHeight(p->left), getHeight(p->right)) + 1;
-
-    if (getBalance(p) == -2) {
-      if (getBalance(p->left) <= 0)
-        p = rotateRight(p);
-      else
-        p = rotateLeftRight(p);
-    } else if (getBalance(p) == 2) {
-      if (getBalance(p->right) >= 0)
-        p = rotateLeft(p);
-      else
-        p = rotateRightLeft(p);
-    }
-
-    return p;
-  }
-
-  Node* rotateRight(Node* p)
-  {
-    assert(p->left != nullptr);
-
-    Node* q = p->left;
-    p->left = q->right;
-    q->right = p;
-
-    p->height = std::max(getHeight(p->left), getHeight(p->right)) + 1;
-    q->height = std::max(getHeight(q->left), getHeight(q->right)) + 1;
-
-    return q;
-  }
-
-  Node* rotateLeft(Node* p)
-  {
-    assert(p->right != nullptr);
-
-    Node* q = p->right;
-    p->right = q->left;
-    q->left = p;
-
-    p->height = std::max(getHeight(p->left), getHeight(p->right)) + 1;
-    q->height = std::max(getHeight(q->left), getHeight(q->right)) + 1;
-
-    return q;
-  }
-
-  Node* rotateLeftRight(Node* p)
-  {
-    assert(p->left != nullptr);
-
-    p->left = rotateLeft(p->left);
-    return rotateRight(p);
-  }
-
-  Node* rotateRightLeft(Node* p)
-  {
-    assert(p->right != nullptr);
-
-    p->right = rotateRight(p->right);
-    return rotateLeft(p);
   }
 
   bool contains(T value, Node* p)

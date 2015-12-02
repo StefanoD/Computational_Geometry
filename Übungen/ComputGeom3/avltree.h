@@ -136,11 +136,9 @@ public:
     }
   }
 
-  template < typename SortComparator >
-  void partitionField(std::vector<T>* field,
-                      const int leftIndex,
-                      const int medianIndex,
-                      const int rightIndex,
+  template <typename SortComparator>
+  void partitionField(std::vector<T>* field, const int leftIndex,
+                      const int medianIndex, const int rightIndex,
                       const std::function<int(QPointF)>& medianCompare,
                       const SortComparator sortCompare)
   {
@@ -148,7 +146,7 @@ public:
 
     auto medianIt = field->begin() + medianIndex;
 
-    //auto medianItPlusOne = field->begin() + medianIndex + 1;
+    // auto medianItPlusOne = field->begin() + medianIndex + 1;
 
     // Ende ist bei std::partition() explizit, deshalb + 1
     auto rightIt = field->begin() + rightIndex + 1;
@@ -174,27 +172,32 @@ public:
         p->value = median;
 
         const auto compare = [median](const QPointF& point) {
-          return point.y() <= median.y();
+          return point.y() < median.y();
         };
 
-        partitionField(x, leftIndex, medianIndex, rightIndex, compare, LessXComparator());
+        partitionField(x, leftIndex, medianIndex, rightIndex, compare,
+                       LessXComparator());
       } else {
         QPointF median = (*x)[medianIndex];
         p->value = median;
 
         const auto compare = [median](const QPointF& point) {
-          return point.x() <= median.x();
+          return point.x() < median.x();
         };
 
-        partitionField(y, leftIndex, medianIndex, rightIndex, compare, LessYComparator());
+        partitionField(y, leftIndex, medianIndex, rightIndex, compare,
+                       LessYComparator());
       }
 
-      p->left = new Node();
-      p->right = new Node();
+      if (leftIndex != rightIndex) {
+        p->left = new Node();
+        p->right = new Node();
 
-      constructBalanced2DTree(leftIndex, medianIndex - 1, p->left, !isVertical);
-      constructBalanced2DTree(medianIndex + 1, rightIndex, p->right,
-                              !isVertical);
+        constructBalanced2DTree(leftIndex, medianIndex - 1, p->left,
+                                !isVertical);
+        constructBalanced2DTree(medianIndex + 1, rightIndex, p->right,
+                                !isVertical);
+      }
     }
   }
 

@@ -151,7 +151,7 @@ void GLWidget::mousePressEvent(QMouseEvent *event)
 void GLWidget::inOrder(typename AVLTree<QPointF>::Node* n,
                        const QPointF& lastPos, const bool isVertical) {
     if ( n != nullptr ) {
-        inOrder(n->left, n->left->value, !isVertical);
+        inOrder(n->left, n->value, !isVertical);
 
         if (isVertical) {
             double leftX;
@@ -199,7 +199,7 @@ void GLWidget::inOrder(typename AVLTree<QPointF>::Node* n,
             glEnd();
        }
 
-       inOrder(n->right, n->right->value, !isVertical);
+       inOrder(n->right, n->value, !isVertical);
     }
 }
 
@@ -214,7 +214,7 @@ void GLWidget::drawPartitions()
 
     twoDTree.insert(&xPoints, &points);
 
-    inOrder(twoDTree.root, QPointF(1, 0), true);
+    inOrder(twoDTree.root, twoDTree.root->value, true);
 /*
     for (auto &segment : segments) {
         glBegin(GL_LINE_STRIP);

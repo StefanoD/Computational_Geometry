@@ -37,7 +37,6 @@ private:
     bool isHorizontalSegment     (const QPointF &p1, const QPointF &p2);
     QPointF getLeftPoint         (const QPointF &p1, const QPointF &p2);
     QPointF getRightPoint        (const QPointF &p1, const QPointF &p2);
-    //void ConstructBalanced2DTree (int leftIndex, int rightIndex, );
 
     std::vector<QPointF> points;
     std::vector<int> xPoints;

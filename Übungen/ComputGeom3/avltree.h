@@ -22,6 +22,10 @@
 #include <algorithm>
 #include <assert.h>
 #include <iterator>
+#include "lessxcomparator.h"
+#include "lessycomparator.h"
+#include "ymediancomparator.h"
+#include "xmediancomparator.h"
 
 template <typename T>
 class AVLTree
@@ -35,7 +39,6 @@ private:
 
     Node* left = nullptr;
     Node* right = nullptr;
-    Node* parent = nullptr;
 
     Node(T v)
       : value(v)
@@ -53,6 +56,9 @@ private:
   };
 
   Node* root = nullptr;
+
+  std::vector<T>& x;
+  std::vector<T>& y;
 
   int getHeight(Node* p)
   {
@@ -75,14 +81,10 @@ private:
     if (p == nullptr) {
       p = new Node(value);
     } else if (value < p->value) {
-      Node* temp = insertR(value, p->left);
-      p->left = temp;
-      temp->parent = p;
+      p->left = insertR(value, p->left);
     } else { // if (value >= p->value). If you want a set, use else if (value >
              // p->value) and an empty else instruction
-      Node* temp = insertR(value, p->right);
-      p->right = temp;
-      temp->parent = p;
+      p->right = insertR(value, p->right);
     }
 
     p = balance(p);
@@ -123,14 +125,6 @@ private:
     p->height = std::max(getHeight(p->left), getHeight(p->right)) + 1;
     q->height = std::max(getHeight(q->left), getHeight(q->right)) + 1;
 
-    q->parent = p->parent;
-
-    if (p->left != nullptr) {
-      p->left->parent = p;
-    }
-
-    p->parent = q;
-
     return q;
   }
 
@@ -144,14 +138,6 @@ private:
 
     p->height = std::max(getHeight(p->left), getHeight(p->right)) + 1;
     q->height = std::max(getHeight(q->left), getHeight(q->right)) + 1;
-
-    q->parent = p->parent;
-
-    if (p->right != nullptr) {
-      p->right->parent = p;
-    }
-
-    p->parent = q;
 
     return q;
   }
@@ -234,82 +220,55 @@ private:
     }
   }
 
-  Node* inOrderSuccessor(Node* n)
+  template < typename Compare >
+  void partitionField(std::vector<T>& field, int leftIndex, int rightIndex, Compare& comparator)
   {
-    if (n->right != nullptr) {
-      return findMin(n->right);
-    }
+    auto left = std::forward(field.begin(), leftIndex);
 
-    Node* p = n->parent;
+    // Ende ist bei std::sort() explizit, deshalb + 1
+    auto right = std::forward(field.begin(), rightIndex + 1);
 
-    while (p != nullptr && n == p->right) {
-      n = p;
-      p = p->parent;
-    }
-
-    return p;
+    std::sort(left, right, comparator);
   }
 
-  class iterator : std::iterator<std::forward_iterator_tag, T>
+  void constructBalanced2DTree(const int leftIndex, const int rightIndex,
+                               Node* p, const bool isVertical)
   {
-    AVLTree* tree;
-    Node* node;
+    if (leftIndex <= rightIndex) {
+      // +1 um aufzurunden
+      int median = (leftIndex + rightIndex + 1) / 2;
 
-  public:
-    explicit iterator()
-      : tree(nullptr)
-      , node(nullptr)
-    {
-    }
-
-    explicit iterator(AVLTree* tree, Node* startNode = nullptr)
-      : tree(tree)
-      , node(startNode)
-    {
-    }
-
-    T& operator*() { return node->value; }
-
-    iterator& operator++()
-    {
-      if (node != nullptr) {
-        node = tree->inOrderSuccessor(node);
+      if (isVertical) {
+        p->value = y[median];
+        partitionField(x, leftIndex, rightIndex, YMedianComparator(median));
+      } else {
+        p->value = x[median];
+        partitionField(x, leftIndex, rightIndex, XMedianComparator(median));
       }
 
-      return *this;
-    }
+      p->left = new Node();
+      p->right = new Node();
 
-    iterator operator++(int)
-    {
-      iterator tmp = *this;
-      ++*this;
-      return tmp;
+      constructBalanced2DTree(leftIndex, median - 1, p->left, !isVertical);
+      constructBalanced2DTree(median + 1, rightIndex, p->right, !isVertical);
     }
-
-    bool operator==(const iterator& other) const { return node == other.node; }
-    bool operator!=(const iterator& other) const { return node != other.node; }
-  };
+  }
 
 public:
   ~AVLTree() { delete root; }
+
+  AVLTree(std::vector<T>& _x, std::vector<T>& _y)
+    : x(_x)
+    , y(_y)
+  {
+    std::sort(x, LessXComparator());
+    std::sort(y, LessYComparator());
+  }
 
   void clear()
   {
     delete root;
     root = nullptr;
-  }
-
-  iterator begin()
-  {
-    Node* startNode = findMin(root);
-    return iterator(this, startNode);
-  }
-  iterator end() { return iterator(); }
-
-  iterator findBiggerEqualThan(T value)
-  {
-    Node* p = findBiggerEqualThan(root, value);
-    return iterator(this, p);
   }
 
   void insert(T value)

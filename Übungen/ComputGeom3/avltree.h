@@ -136,11 +136,13 @@ public:
     }
   }
 
-  template <typename SortComparator>
-  void partitionField(std::vector<T>* field, const int leftIndex,
-                      const int medianIndex, const int rightIndex,
-                      const std::function<int(QPointF)>& medianCompare,
-                      const SortComparator sortCompare)
+  template < typename MedianSort, typename OrderComparator >
+  void partitionField(std::vector<T>* field,
+                      const int leftIndex,
+                      const int medianIndex,
+                      const int rightIndex,
+                      MedianSort medianSort,
+                      OrderComparator orderSort)
   {
     auto leftIt = field->begin() + leftIndex;
 
@@ -151,13 +153,16 @@ public:
     // Ende ist bei std::partition() explizit, deshalb + 1
     auto rightIt = field->begin() + rightIndex + 1;
 
-    std::partition(leftIt, rightIt, medianCompare);
+    std::sort(leftIt, rightIt, medianSort);
+
+    std::sort(leftIt, medianIt, orderSort);
+    std::sort(medianIt + 1, rightIt, orderSort);
 
     // Nach der Partitionierung, muss innerhalb der Partitionierungen nochmals
     // der Größe nach sortiert werden, damit später wieder der Median geholt
     // werden kann, in dem man auf den halben Index zugreift.
-    std::sort(leftIt, medianIt, sortCompare);
-    std::sort(medianIt + 1, rightIt, sortCompare);
+    //std::sort(leftIt, medianIt, sortCompare);
+    //std::sort(medianIt + 1, rightIt, sortCompare);
   }
 
   void constructBalanced2DTree(const int leftIndex, const int rightIndex,
@@ -168,25 +173,27 @@ public:
       int medianIndex = (leftIndex + rightIndex + 1) / 2;
 
       if (isVertical) {
-        QPointF median = (*y)[medianIndex];
-        p->value = median;
+        QPointF yMedian = (*y)[medianIndex];
+        p->value = yMedian;
+/*
+        const auto compare = [yMedian](const QPointF& point) {
+          return point.y() < yMedian.y();
+        };*/
 
-        const auto compare = [median](const QPointF& point) {
-          return point.y() <= median.y();
-        };
+        //partitionField(x, leftIndex, rightIndex, compare);
 
-        partitionField(x, leftIndex, medianIndex, rightIndex, compare,
-                       LessXComparator());
+        partitionField(x, leftIndex, medianIndex, rightIndex, LessYComparator(), LessXComparator());
       } else {
-        QPointF median = (*x)[medianIndex];
-        p->value = median;
-
-        const auto compare = [median](const QPointF& point) {
-          return point.x() <= median.x();
+        QPointF xMedian = (*x)[medianIndex];
+        p->value = xMedian;
+/*
+        const auto compare = [xMedian](const QPointF& point) {
+          return point.x() < xMedian.x();
         };
 
-        partitionField(y, leftIndex, medianIndex, rightIndex, compare,
-                       LessYComparator());
+        partitionField(y, leftIndex, rightIndex, compare);*/
+
+        partitionField(y, leftIndex, medianIndex, rightIndex, LessXComparator(), LessYComparator());
       }
 
       if (leftIndex != rightIndex) {

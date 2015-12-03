@@ -148,8 +148,6 @@ public:
 
     auto medianIt = field->begin() + medianIndex;
 
-    // auto medianItPlusOne = field->begin() + medianIndex + 1;
-
     // Ende ist bei std::partition() explizit, deshalb + 1
     auto rightIt = field->begin() + rightIndex + 1;
 
@@ -157,12 +155,6 @@ public:
 
     std::sort(leftIt, medianIt, orderSort);
     std::sort(medianIt + 1, rightIt, orderSort);
-
-    // Nach der Partitionierung, muss innerhalb der Partitionierungen nochmals
-    // der Größe nach sortiert werden, damit später wieder der Median geholt
-    // werden kann, in dem man auf den halben Index zugreift.
-    //std::sort(leftIt, medianIt, sortCompare);
-    //std::sort(medianIt + 1, rightIt, sortCompare);
   }
 
   void constructBalanced2DTree(const int leftIndex, const int rightIndex,
@@ -175,25 +167,15 @@ public:
       if (isVertical) {
         QPointF yMedian = (*y)[medianIndex];
         p->value = yMedian;
-/*
-        const auto compare = [yMedian](const QPointF& point) {
-          return point.y() < yMedian.y();
-        };*/
 
-        //partitionField(x, leftIndex, rightIndex, compare);
-
-        partitionField(x, leftIndex, medianIndex, rightIndex, LessYComparator(), LessXComparator());
+        partitionField(x, leftIndex, medianIndex, rightIndex,
+                       LessYComparator(), LessXComparator());
       } else {
         QPointF xMedian = (*x)[medianIndex];
         p->value = xMedian;
-/*
-        const auto compare = [xMedian](const QPointF& point) {
-          return point.x() < xMedian.x();
-        };
 
-        partitionField(y, leftIndex, rightIndex, compare);*/
-
-        partitionField(y, leftIndex, medianIndex, rightIndex, LessXComparator(), LessYComparator());
+        partitionField(y, leftIndex, medianIndex, rightIndex,
+                       LessXComparator(), LessYComparator());
       }
 
       if (leftIndex != rightIndex) {

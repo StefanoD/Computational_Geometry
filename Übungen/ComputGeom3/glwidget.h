@@ -49,7 +49,7 @@ private:
     bool getFirstPoint = true;
 
     void drawPartitions       ();
-    void inOrder(AVLTree<QPointF>::Node *n, const QPointF& lastPos, const bool isVertical);
+    void inOrder(AVLTree<QPointF>::Node *n, QPointF& lastPos, const int depth);
 };
 
 

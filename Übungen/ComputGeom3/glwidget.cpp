@@ -149,24 +149,24 @@ void GLWidget::mousePressEvent(QMouseEvent *event)
 }
 
 void GLWidget::inOrder(typename AVLTree<QPointF>::Node* n,
-                       const QPointF& lastPos, const bool isVertical) {
+                       QPointF& lastPos, const int depth) {
     if ( n != nullptr ) {
-        inOrder(n->left, n->value, !isVertical);
+        inOrder(n->left, n->value, depth + 1);
 
-        if (isVertical) {
+        if (depth % 2 == 0) {
             double leftX;
             double rightX;
 
-            if ( n->value.x() < lastPos.x()) {
-                leftX = -1.0;
-            } else {
-                leftX = lastPos.x();
+            if (depth == 0) {
+                lastPos.rx() = -1;
             }
 
-            if ( n->value.x() > lastPos.x()) {
-                rightX = 1.0;
-            } else {
+            if ( n->value.x() < lastPos.x()) {
+                leftX = -1.0;
                 rightX = lastPos.x();
+            } else {
+                leftX = lastPos.x();
+                rightX = 1;
             }
 
             glBegin(GL_LINE_STRIP);
@@ -179,16 +179,12 @@ void GLWidget::inOrder(typename AVLTree<QPointF>::Node* n,
             double lowerY;
             double upperY;
 
-            if ( n->value.y() < lastPos.y()) {
+            if ( n->value.y() > lastPos.y()) {
+                upperY = 1.0;
                 lowerY = lastPos.y();
             } else {
-                lowerY = 1.0;
-            }
-
-            if ( n->value.y() > lastPos.y()) {
-                upperY = lastPos.x();
-            } else {
-                upperY = -1.0;
+                upperY = lastPos.y();
+                lowerY = -1;
             }
 
             glBegin(GL_LINE_STRIP);
@@ -199,7 +195,7 @@ void GLWidget::inOrder(typename AVLTree<QPointF>::Node* n,
             glEnd();
        }
 
-       inOrder(n->right, n->value, !isVertical);
+       inOrder(n->right, n->value, depth + 1);
     }
 }
 
@@ -214,7 +210,7 @@ void GLWidget::drawPartitions()
 
     twoDTree.insert(&xPoints, &points);
 
-    inOrder(twoDTree.root, twoDTree.root->value, true);
+    inOrder(twoDTree.root, twoDTree.root->value, 0);
 /*
     for (auto &segment : segments) {
         glBegin(GL_LINE_STRIP);

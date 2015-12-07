@@ -39,6 +39,8 @@ public:
 
     Node* left = nullptr;
     Node* right = nullptr;
+    Node* parent = nullptr;
+    bool isVertical = true;
 
     Node(T v = T())
       : value(v)
@@ -155,16 +157,18 @@ public:
   }
 
   void constructBalanced2DTree(const int leftIndex, const int rightIndex,
-                               Node** p, const bool isVertical)
+                               Node** p, Node* parent, const bool isVertical)
   {
     if (leftIndex <= rightIndex) {
 
       if (*p == nullptr) {
         *p = new Node();
+        (**p).parent = parent;
+        (**p).isVertical = isVertical;
       }
 
       // +1 um aufzurunden
-      int medianIndex = (leftIndex + rightIndex + 1) / 2;
+      int medianIndex = (leftIndex + rightIndex) / 2;
 
       if (isVertical) {
         QPointF yMedian = (*y)[medianIndex];
@@ -180,9 +184,9 @@ public:
                        LessYComparator());
       }
 
-      constructBalanced2DTree(leftIndex, medianIndex - 1, &(*p)->left,
+      constructBalanced2DTree(leftIndex, medianIndex - 1, &(*p)->left, *p,
                               !isVertical);
-      constructBalanced2DTree(medianIndex + 1, rightIndex, &(*p)->right,
+      constructBalanced2DTree(medianIndex + 1, rightIndex, &(*p)->right, *p,
                               !isVertical);
     }
   }
@@ -211,7 +215,7 @@ public:
     std::sort(x->begin(), x->end(), LessXComparator());
     std::sort(y->begin(), y->end(), LessYComparator());
 
-    constructBalanced2DTree(0, x->size() - 1, &root, true);
+    constructBalanced2DTree(0, x->size() - 1, &root, nullptr, true);
   }
 
   bool contains(T value) { return contains(value, root); }

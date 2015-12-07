@@ -148,24 +148,35 @@ void GLWidget::mousePressEvent(QMouseEvent *event)
     update();
 }
 
-void GLWidget::inOrder(typename AVLTree<QPointF>::Node* n,
-                       QPointF& lastPos, const int depth) {
+void GLWidget::inOrder(typename AVLTree<QPointF>::Node* n) {
     if ( n != nullptr ) {
-        inOrder(n->left, n->value, depth + 1);
+        inOrder(n->left);
 
-        if (depth % 2 == 0) {
-            double leftX;
-            double rightX;
+        if (n->isVertical) {
+            double mostRightXInPartition = n->value.x();
+            double mostLeftXInPartition = n->value.x();
 
-            if (depth == 0) {
-                lastPos.rx() = -1;
+            for (AVLTree<QPointF>::Node *parent = n->parent; parent != nullptr; parent = parent->parent) {
+                if (!parent->isVertical && parent->value.x() > mostRightXInPartition) {
+                    mostRightXInPartition = parent->value.x();
+                    break;
+                }
             }
 
-            if ( n->value.x() < lastPos.x()) {
+            for (AVLTree<QPointF>::Node *parent = n->parent; parent != nullptr; parent = parent->parent) {
+                if (!parent->isVertical && parent->value.x() < mostLeftXInPartition) {
+                    mostLeftXInPartition = parent->value.x();
+                    break;
+                }
+            }
+
+            double leftX = mostLeftXInPartition;
+            double rightX = mostRightXInPartition;
+
+            if ( n->value.x() <= mostLeftXInPartition) {
                 leftX = -1.0;
-                rightX = lastPos.x();
-            } else {
-                leftX = lastPos.x();
+            }
+            if ( n->value.x() >= mostRightXInPartition) {
                 rightX = 1;
             }
 
@@ -176,14 +187,30 @@ void GLWidget::inOrder(typename AVLTree<QPointF>::Node* n,
 
             glEnd();
        } else {
-            double lowerY;
-            double upperY;
+            double highestYInPartition = n->value.y();
+            double lowestYInPartition = n->value.y();
 
-            if ( n->value.y() > lastPos.y()) {
+            for (AVLTree<QPointF>::Node *parent = n->parent; parent != nullptr; parent = parent->parent) {
+                if (parent->isVertical && parent->value.y() > highestYInPartition) {
+                    highestYInPartition = parent->value.y();
+                    break;
+                }
+            }
+
+            for (AVLTree<QPointF>::Node *parent = n->parent; parent != nullptr; parent = parent->parent) {
+                if (parent->isVertical && parent->value.y() < lowestYInPartition) {
+                    lowestYInPartition = parent->value.y();
+                    break;
+                }
+            }
+
+            double lowerY = lowestYInPartition;
+            double upperY = highestYInPartition;
+
+            if ( n->value.y() >= highestYInPartition ) {
                 upperY = 1.0;
-                lowerY = lastPos.y();
-            } else {
-                upperY = lastPos.y();
+            }
+            if ( n->value.y() <= lowestYInPartition ) {
                 lowerY = -1;
             }
 
@@ -195,7 +222,7 @@ void GLWidget::inOrder(typename AVLTree<QPointF>::Node* n,
             glEnd();
        }
 
-       inOrder(n->right, n->value, depth + 1);
+       inOrder(n->right);
     }
 }
 
@@ -207,17 +234,23 @@ void GLWidget::drawPartitions()
     glColor4f( 0.0f, 0.407, 0.95f, 1.0f );
 
     xPoints = points;
+/*
+    std::vector<QPointF> xPoints = {
+      QPointF(-0.4690721835232112, -0.5309278350515463),
+      QPointF(0.2886598052450531, -0.31443298969072164),
+      QPointF(0.40206187159132367, -0.6855670103092784),
+      QPointF(0.5515464135932261, -0.3608247422680413),
+      QPointF(-0.1649484601400303, -0.12886597938144329),
+      QPointF(-0.6030928073869857, 0.7010309278350515),
+      QPointF(-0.39175259283257197, 0.30927835051546393),
+      QPointF(0.7061855949745045, 0.2938144329896907),
+      QPointF(0.5154639379375946, 0.711340206185567),
+    };
+
+    points = xPoints;*/
+
 
     twoDTree.insert(&xPoints, &points);
 
-    inOrder(twoDTree.root, twoDTree.root->value, 0);
-/*
-    for (auto &segment : segments) {
-        glBegin(GL_LINE_STRIP);
-
-        glVertex2f( segment->pLeft.x(), segment->pLeft.y() );
-        glVertex2f( segment->pRight.x(), segment->pRight.y() );
-
-        glEnd();
-    }*/
+    inOrder(twoDTree.root);
 }

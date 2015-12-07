@@ -136,17 +136,22 @@ public:
     }
   }
 
-  template <typename MedianSort>
+  template <typename MedianSort, typename OrderComparator>
   void partitionField(std::vector<T>* field, const int leftIndex,
-                      const int rightIndex, MedianSort medianSort)
+                      const int medianIndex, const int rightIndex,
+                      MedianSort medianSort, OrderComparator orderSort)
   {
     auto leftIt = field->begin() + leftIndex;
-    auto medianIt = field->begin() + ((rightIndex - leftIndex) / 2);
+
+    auto medianIt = field->begin() + medianIndex;
 
     // Ende ist bei std::partition() explizit, deshalb + 1
     auto rightIt = field->begin() + rightIndex + 1;
 
-    std::nth_element(leftIt, medianIt, rightIt, medianSort);
+    std::sort(leftIt, rightIt, medianSort);
+
+    std::sort(leftIt, medianIt, orderSort);
+    std::sort(medianIt + 1, rightIt, orderSort);
   }
 
   void constructBalanced2DTree(const int leftIndex, const int rightIndex,
@@ -158,18 +163,21 @@ public:
         *p = new Node();
       }
 
-      int medianIndex = (leftIndex + rightIndex) / 2;
+      // +1 um aufzurunden
+      int medianIndex = (leftIndex + rightIndex + 1) / 2;
 
       if (isVertical) {
         QPointF yMedian = (*y)[medianIndex];
         (**p).value = yMedian;
 
-        partitionField(x, leftIndex, rightIndex, LessYComparator());
+        partitionField(x, leftIndex, medianIndex, rightIndex, LessYComparator(),
+                       LessXComparator());
       } else {
         QPointF xMedian = (*x)[medianIndex];
         (**p).value = xMedian;
 
-        partitionField(y, leftIndex, rightIndex, LessXComparator());
+        partitionField(y, leftIndex, medianIndex, rightIndex, LessXComparator(),
+                       LessYComparator());
       }
 
       constructBalanced2DTree(leftIndex, medianIndex - 1, &(*p)->left,

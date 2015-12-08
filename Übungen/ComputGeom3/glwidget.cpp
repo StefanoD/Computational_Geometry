@@ -153,10 +153,10 @@ void GLWidget::inOrder(typename TwoDTree::Node* n) {
             double rightX = mostRightXInPartition;
 
             if ( n->value.x() <= mostLeftXInPartition) {
-                leftX = -1.0;
+                leftX = -2.0;
             }
             if ( n->value.x() >= mostRightXInPartition) {
-                rightX = 1;
+                rightX = 2;
             }
 
             glBegin(GL_LINE_STRIP);

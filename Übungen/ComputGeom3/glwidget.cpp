@@ -200,17 +200,17 @@ void GLWidget::rangeSearch(TwoDTree::Node *p, RangeQuery &rq, std::vector<QPoint
         double coord;
 
         if (p->isVertical) {
-            l = qMin(rq.rightBottom.y(), rq.leftUpper.y());
-            r = qMax(rq.rightBottom.y(), rq.leftUpper.y());
+            l = qMin(rq.p2.y(), rq.p1.y());
+            r = qMax(rq.p2.y(), rq.p1.y());
             coord = p->value.y();
         } else {
-            l = qMin(rq.rightBottom.x(), rq.leftUpper.x());
-            r = qMax(rq.rightBottom.x(), rq.leftUpper.x());
+            l = qMin(rq.p2.x(), rq.p1.x());
+            r = qMax(rq.p2.x(), rq.p1.x());
             coord = p->value.x();
         }
 
-        if (p->value.y() <= rq.leftUpper.y() && p->value.y() >= rq.rightBottom.y() &&
-            p->value.x() >= rq.leftUpper.x() && p->value.x() <= rq.rightBottom.x()) {
+        if (p->value.y() <= rq.p1.y() && p->value.y() >= rq.p2.y() &&
+            p->value.x() >= rq.p1.x() && p->value.x() <= rq.p2.x()) {
             includingPoints.push_back(p->value);
         }
         if (l < coord) {
@@ -229,11 +229,11 @@ void GLWidget::drawQuery()
     glBegin(GL_LINE_STRIP);
     glColor4f( 0.00f, 0.9, 0.0f, 1.0f );
 
-    glVertex2f( rq.leftUpper.x(), rq.leftUpper.y() );
-    glVertex2f( rq.rightBottom.x(), rq.leftUpper.y() );
-    glVertex2f( rq.rightBottom.x(), rq.rightBottom.y() );
-    glVertex2f( rq.leftUpper.x(), rq.rightBottom.y() );
-    glVertex2f( rq.leftUpper.x(), rq.leftUpper.y() );
+    glVertex2f( rq.p1.x(), rq.p1.y() );
+    glVertex2f( rq.p2.x(), rq.p1.y() );
+    glVertex2f( rq.p2.x(), rq.p2.y() );
+    glVertex2f( rq.p1.x(), rq.p2.y() );
+    glVertex2f( rq.p1.x(), rq.p1.y() );
 
     glEnd();
 

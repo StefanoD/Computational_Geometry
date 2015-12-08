@@ -5,12 +5,12 @@
 
 class RangeQuery {
 public:
-    QPointF leftUpper;
-    QPointF rightBottom;
+    QPointF p1;
+    QPointF p2;
 
-    RangeQuery(QPointF _leftUpper, QPointF _rightBottom):
-        leftUpper(_leftUpper),
-        rightBottom(_rightBottom)
+    RangeQuery(QPointF _p1, QPointF _p2):
+        p1(_p1),
+        p2(_p2)
     {}
 };
 

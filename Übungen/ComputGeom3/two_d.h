@@ -59,7 +59,7 @@ public:
     std::vector<QPointF> partition2;
 
 
-    for (auto elem : *field) {
+    for (auto &elem : *field) {
       if (elem == median) {
         // Do nothing
       } else if (orderSort(median, elem)) {

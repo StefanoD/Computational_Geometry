@@ -8,7 +8,8 @@
 #include "mainwindow.h"
 
 
-GLWidget::GLWidget(QWidget *parent) : QGLWidget(parent)
+GLWidget::GLWidget(QWidget *parent) :   QGLWidget(parent),
+                                        rq(QPointF(-5, -5), QPointF(-5, -5))
 {
 }
 
@@ -91,12 +92,17 @@ void GLWidget::keyPressEvent(QKeyEvent * event)
 
 void GLWidget::mousePressEvent(QMouseEvent *event)
 {
+    QPointF clickedPoint = transformPosition(event->pos());
+
     if (event->buttons() & Qt::LeftButton ) {
-        QPointF clickedPoint = transformPosition(event->pos());
-
         points.push_back(clickedPoint);
-    } else if (event->buttons() & Qt::RightButton ) {
+    } else if (event->buttons() & Qt::RightButton) {
+        if (getFirstPoint) {
+            rq.p1 = clickedPoint;
+            rq.p2 = clickedPoint;
 
+            getFirstPoint = false;
+        }
     }
 
     update();
@@ -104,9 +110,20 @@ void GLWidget::mousePressEvent(QMouseEvent *event)
 
 void GLWidget::mouseReleaseEvent(QMouseEvent *event)
 {
-    if (event->buttons() & Qt::RightButton ) {
+    getFirstPoint = true;
 
+    update();
+}
+
+void GLWidget::mouseMoveEvent(QMouseEvent *event)
+{
+    QPointF clickedPoint = transformPosition(event->pos());
+
+    if (event->buttons() & Qt::RightButton && !getFirstPoint) {
+        rq.p2 = clickedPoint;
     }
+
+    update();
 }
 
 
@@ -234,7 +251,7 @@ void GLWidget::rangeSearch(TwoDTree::Node *p, RangeQuery &rq, std::vector<QPoint
 
 void GLWidget::drawQuery()
 {
-    RangeQuery rq(QPointF(0.25, 0.75), QPointF(0.75, -0.75));
+    //RangeQuery rq(QPointF(0.25, 0.75), QPointF(0.75, -0.75));
 
     glBegin(GL_LINE_STRIP);
     glColor4f( 0.00f, 0.9, 0.0f, 1.0f );
@@ -252,7 +269,7 @@ void GLWidget::drawQuery()
 
 void GLWidget::drawPointsInRange()
 {
-    RangeQuery rq(QPointF(0.25, 0.75), QPointF(0.75, -0.75));
+    //RangeQuery rq(QPointF(0.25, 0.75), QPointF(0.75, -0.75));
 
     std::vector<QPointF> includingPoints;
     rangeSearch(twoDTree.root, rq, includingPoints);

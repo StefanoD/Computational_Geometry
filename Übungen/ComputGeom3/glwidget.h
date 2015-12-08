@@ -29,6 +29,7 @@ protected:
     void keyPressEvent        (QKeyEvent   *event) override;
     void mousePressEvent      (QMouseEvent *event) override;
     void mouseReleaseEvent    (QMouseEvent *event) override;
+    void mouseMoveEvent       (QMouseEvent *event) override;
 
 private:
 
@@ -42,6 +43,8 @@ private:
     double  aspectx, aspecty;
 
     bool getFirstPoint = true;
+
+    RangeQuery rq;
 
     void drawPartitions       ();
     void rangeSearch(TwoDTree::Node* p, RangeQuery &rq, std::vector<QPointF> &includingPoints);

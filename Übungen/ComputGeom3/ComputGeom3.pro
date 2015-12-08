@@ -29,8 +29,6 @@ HEADERS +=  mainwindow.h \
     isosegment.h \
     lessxcomparator.h \
     lessycomparator.h \
-    avltree.h \
-    ymediancomparator.h \
-    xmediancomparator.h
+    avltree.h
 
 FORMS   += mainwindow.ui

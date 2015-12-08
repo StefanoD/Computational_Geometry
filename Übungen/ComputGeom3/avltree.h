@@ -20,14 +20,9 @@
 #define AVLTREE_H
 
 #include <algorithm>
-#include <assert.h>
-#include <iterator>
 #include <tuple>
-#include <functional>
 #include "lessxcomparator.h"
 #include "lessycomparator.h"
-#include "ymediancomparator.h"
-#include "xmediancomparator.h"
 
 template <typename T>
 class AVLTree
@@ -59,85 +54,6 @@ public:
   };
 
   Node* root = nullptr;
-
-  std::vector<QPointF>* x;
-  std::vector<QPointF>* y;
-
-  Node* insertR(T value, Node* p)
-  {
-    if (p == nullptr) {
-      p = new Node(value);
-    } else if (value < p->value) {
-      p->left = insertR(value, p->left);
-    } else { // if (value >= p->value). If you want a set, use else if (value >
-             // p->value) and an empty else instruction
-      p->right = insertR(value, p->right);
-    }
-
-    return p;
-  }
-
-  bool contains(T value, Node* p)
-  {
-    if (p == nullptr) {
-      return false;
-    }
-
-    if (value < p->value) {
-      return contains(value, p->left);
-    }
-
-    if (value > p->value) {
-      return contains(value, p->right);
-    }
-
-    return true;
-  }
-
-  Node* findMax(Node* p)
-  {
-    if (p == nullptr) {
-      return p;
-    } else {
-      while (p->right != nullptr) {
-        p = p->right;
-      }
-      return p;
-    }
-  }
-
-  Node* findMin(Node* p)
-  {
-    if (p == nullptr) {
-      return p;
-    } else {
-      while (p->left != nullptr) {
-        p = p->left;
-      }
-      return p;
-    }
-  }
-
-  Node* findBiggerEqualThan(Node* p, T value)
-  {
-    if (p != nullptr) {
-      if (p->value == value) {
-        return p;
-      } else if (p->value < value) {
-        if (p->right == nullptr) {
-          return inOrderSuccessor(p);
-        }
-        return findBiggerEqualThan(p->right, value);
-      } else { // if (p->value > value) {
-        if (p->left == nullptr) {
-          return p;
-        }
-        return findBiggerEqualThan(p->left, value);
-      }
-    } else {
-      return p;
-    }
-  }
 
   template <typename OrderComparator>
   auto partitionField(std::vector<QPointF>* field, QPointF median,
@@ -200,31 +116,16 @@ public:
 
   AVLTree()
     : root(new Node())
-    , x(nullptr)
-    , y(nullptr)
   {
   }
 
-  void clear()
+  void insert(std::vector<QPointF>* x, std::vector<QPointF>* y)
   {
-    delete root;
-    root = nullptr;
-  }
-
-  void insert(std::vector<QPointF>* _x, std::vector<QPointF>* _y)
-  {
-    x = _x;
-    y = _y;
-
     std::sort(x->begin(), x->end(), LessXComparator());
     std::sort(y->begin(), y->end(), LessYComparator());
 
     constructBalanced2DTree(y, x, &root, nullptr, true);
   }
-
-  bool contains(T value) { return contains(value, root); }
-
-  T findMax() { findMax(root)->value; }
 };
 
 #endif // AVLTREE_H

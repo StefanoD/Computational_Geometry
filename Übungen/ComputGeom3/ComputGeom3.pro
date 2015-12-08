@@ -26,9 +26,8 @@ SOURCES +=  main.cpp \
 HEADERS +=  mainwindow.h \
             ViewEventHandler.h \
             glwidget.h \
-    isosegment.h \
     lessxcomparator.h \
     lessycomparator.h \
-    avltree.h
+    two_d.h
 
 FORMS   += mainwindow.ui

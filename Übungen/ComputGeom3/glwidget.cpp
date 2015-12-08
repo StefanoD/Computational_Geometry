@@ -3,14 +3,9 @@
 
 #include <QtGui>
 #include <GL/glu.h>
-#include <algorithm>
-
-#include <memory>
-#include <map>
 
 #include "glwidget.h"
 #include "mainwindow.h"
-#include "isosegment.h"
 
 
 GLWidget::GLWidget(QWidget *parent) : QGLWidget(parent)
@@ -82,52 +77,6 @@ QPointF GLWidget::transformPosition(const QPoint &p)
                     -(2.0*p.y()/height() - 1.0)*aspecty);
 }
 
-double GLWidget::getScalarProduct(const QPointF &lineSeg1,
-                                  const QPointF &lineSeg2)
-{
-    const double scalarProduct = lineSeg1.x() * lineSeg2.x() +
-                                 lineSeg1.y() * lineSeg2.y();
-
-    return scalarProduct;
-}
-
-bool GLWidget::isHorizontalSegment(const QPointF &p1, const QPointF &p2)
-{
-    // Punkt, der auf der Waagrechten von Punkt p1 liegt.
-    const QPointF pHorizontal = QPointF(p1.x() + 10, p1.y());
-
-    // Repräsentiert ein horizontales Segment vom Punkt p1
-    const QPointF lineSegHorizontal = QPointF(pHorizontal.x() - p1.x(),
-                                              pHorizontal.y() - p1.y());
-
-    const QPointF p2p1 = QPointF(p2.x() - p1.x(),
-                                 p2.y() - p1.y());
-
-    const double scalarProduct = getScalarProduct(lineSegHorizontal, p2p1);
-
-    const double magnitudeSeg1 = qSqrt(lineSegHorizontal.x() * lineSegHorizontal.x() +
-                                       lineSegHorizontal.y() * lineSegHorizontal.y());
-
-    const double magnitudeSeg2 = qSqrt(p2p1.x() * p2p1.x() + p2p1.y() * p2p1.y());
-
-    const double degree = qAcos( scalarProduct / (magnitudeSeg1 * magnitudeSeg2) ) *
-                          180 / M_PI;
-
-    return degree < 45 || degree > 135;
-}
-
-QPointF GLWidget::getLeftPoint(const QPointF &p1, const QPointF &p2)
-{
-    if (p1.x() < p2.x()) return p1;
-    return p2;
-}
-
-QPointF GLWidget::getRightPoint(const QPointF &p1, const QPointF &p2)
-{
-    if (p1.x() > p2.x()) return p1;
-    return p2;
-}
-
 void GLWidget::keyPressEvent(QKeyEvent * event)
 {
     switch (event->key()) {
@@ -148,7 +97,7 @@ void GLWidget::mousePressEvent(QMouseEvent *event)
     update();
 }
 
-void GLWidget::inOrder(typename AVLTree<QPointF>::Node* n) {
+void GLWidget::inOrder(typename TwoDTree<QPointF>::Node* n) {
     if ( n != nullptr ) {
         inOrder(n->left);
 
@@ -156,14 +105,14 @@ void GLWidget::inOrder(typename AVLTree<QPointF>::Node* n) {
             double mostRightXInPartition = n->value.x();
             double mostLeftXInPartition = n->value.x();
 
-            for (AVLTree<QPointF>::Node *parent = n->parent; parent != nullptr; parent = parent->parent) {
+            for (TwoDTree<QPointF>::Node *parent = n->parent; parent != nullptr; parent = parent->parent) {
                 if (!parent->isVertical && parent->value.x() > mostRightXInPartition) {
                     mostRightXInPartition = parent->value.x();
                     break;
                 }
             }
 
-            for (AVLTree<QPointF>::Node *parent = n->parent; parent != nullptr; parent = parent->parent) {
+            for (TwoDTree<QPointF>::Node *parent = n->parent; parent != nullptr; parent = parent->parent) {
                 if (!parent->isVertical && parent->value.x() < mostLeftXInPartition) {
                     mostLeftXInPartition = parent->value.x();
                     break;
@@ -190,14 +139,14 @@ void GLWidget::inOrder(typename AVLTree<QPointF>::Node* n) {
             double highestYInPartition = n->value.y();
             double lowestYInPartition = n->value.y();
 
-            for (AVLTree<QPointF>::Node *parent = n->parent; parent != nullptr; parent = parent->parent) {
+            for (TwoDTree<QPointF>::Node *parent = n->parent; parent != nullptr; parent = parent->parent) {
                 if (parent->isVertical && parent->value.y() > highestYInPartition) {
                     highestYInPartition = parent->value.y();
                     break;
                 }
             }
 
-            for (AVLTree<QPointF>::Node *parent = n->parent; parent != nullptr; parent = parent->parent) {
+            for (TwoDTree<QPointF>::Node *parent = n->parent; parent != nullptr; parent = parent->parent) {
                 if (parent->isVertical && parent->value.y() < lowestYInPartition) {
                     lowestYInPartition = parent->value.y();
                     break;

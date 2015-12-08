@@ -25,7 +25,7 @@
 #include "lessycomparator.h"
 
 template <typename T>
-class AVLTree
+class TwoDTree
 {
 public:
   class Node
@@ -112,9 +112,9 @@ public:
   }
 
 public:
-  ~AVLTree() { delete root; }
+  ~TwoDTree() { delete root; }
 
-  AVLTree()
+  TwoDTree()
     : root(new Node())
   {
   }

@@ -22,6 +22,7 @@
 #include <algorithm>
 #include <assert.h>
 #include <iterator>
+#include <tuple>
 #include <functional>
 #include "lessxcomparator.h"
 #include "lessycomparator.h"
@@ -59,8 +60,8 @@ public:
 
   Node* root = nullptr;
 
-  std::vector<T>* x;
-  std::vector<T>* y;
+  std::vector<QPointF>* x;
+  std::vector<QPointF>* y;
 
   Node* insertR(T value, Node* p)
   {
@@ -138,28 +139,34 @@ public:
     }
   }
 
-  template <typename MedianSort, typename OrderComparator>
-  void partitionField(std::vector<T>* field, const int leftIndex,
-                      const int medianIndex, const int rightIndex,
-                      MedianSort medianSort, OrderComparator orderSort)
+  template <typename OrderComparator>
+  auto partitionField(std::vector<QPointF>* field, QPointF median,
+                      OrderComparator orderSort)
   {
-    auto leftIt = field->begin() + leftIndex;
+    std::vector<QPointF> partition1;
+    std::vector<QPointF> partition2;
 
-    auto medianIt = field->begin() + medianIndex;
 
-    // Ende ist bei std::partition() explizit, deshalb + 1
-    auto rightIt = field->begin() + rightIndex + 1;
+    for (auto elem : *field) {
+      if (elem == median) {
+        // Do nothing
+      } else if (orderSort(median, elem)) {
+        partition2.push_back(elem);
+      } else {
+        partition1.push_back(elem);
+      }
+    }
 
-    std::sort(leftIt, rightIt, medianSort);
-
-    std::sort(leftIt, medianIt, orderSort);
-    std::sort(medianIt + 1, rightIt, orderSort);
+    return std::make_tuple(partition1, partition2);
   }
 
-  void constructBalanced2DTree(const int leftIndex, const int rightIndex,
+  void constructBalanced2DTree(std::vector<QPointF>* partY,
+                               std::vector<QPointF>* partX,
                                Node** p, Node* parent, const bool isVertical)
   {
-    if (leftIndex <= rightIndex) {
+    if (partY->size() > 0) {
+
+      int medianIndex = (partY->size()-1) / 2;
 
       if (*p == nullptr) {
         *p = new Node();
@@ -167,27 +174,24 @@ public:
         (**p).isVertical = isVertical;
       }
 
-      // +1 um aufzurunden
-      int medianIndex = (leftIndex + rightIndex) / 2;
+      QPointF median;
+      std::vector<T> partX1, partX2;
+      std::vector<T> partY1, partY2;
 
       if (isVertical) {
-        QPointF yMedian = (*y)[medianIndex];
-        (**p).value = yMedian;
-
-        partitionField(x, leftIndex, medianIndex, rightIndex, LessYComparator(),
-                       LessXComparator());
+          median = (*partY)[medianIndex];
+          std::tie(partY1, partY2) = partitionField(partY, median, LessYComparator());
+          std::tie(partX1, partX2) = partitionField(partX, median, LessYComparator());
       } else {
-        QPointF xMedian = (*x)[medianIndex];
-        (**p).value = xMedian;
-
-        partitionField(y, leftIndex, medianIndex, rightIndex, LessXComparator(),
-                       LessYComparator());
+          median = (*partX)[medianIndex];
+          std::tie(partX1, partX2) = partitionField(partX, median, LessXComparator());
+          std::tie(partY1, partY2) = partitionField(partY, median, LessXComparator());
       }
 
-      constructBalanced2DTree(leftIndex, medianIndex - 1, &(*p)->left, *p,
-                              !isVertical);
-      constructBalanced2DTree(medianIndex + 1, rightIndex, &(*p)->right, *p,
-                              !isVertical);
+      (**p).value = median;
+
+      constructBalanced2DTree(&partY1, &partX1, &(*p)->left, *p, !isVertical);
+      constructBalanced2DTree(&partY2, &partX2, &(*p)->right, *p, !isVertical);
     }
   }
 
@@ -207,7 +211,7 @@ public:
     root = nullptr;
   }
 
-  void insert(std::vector<T>* _x, std::vector<T>* _y)
+  void insert(std::vector<QPointF>* _x, std::vector<QPointF>* _y)
   {
     x = _x;
     y = _y;
@@ -215,7 +219,7 @@ public:
     std::sort(x->begin(), x->end(), LessXComparator());
     std::sort(y->begin(), y->end(), LessYComparator());
 
-    constructBalanced2DTree(0, x->size() - 1, &root, nullptr, true);
+    constructBalanced2DTree(y, x, &root, nullptr, true);
   }
 
   bool contains(T value) { return contains(value, root); }

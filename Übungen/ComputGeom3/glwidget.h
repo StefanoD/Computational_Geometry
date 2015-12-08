@@ -48,6 +48,10 @@ private:
 
     void drawPartitions       ();
     void rangeSearch(TwoDTree::Node* p, RangeQuery &rq, std::vector<QPointF> &includingPoints);
+    double getLeftMost(RangeQuery &rq);
+    double getRightMost(RangeQuery &rq);
+    double getLowest(RangeQuery &rq);
+    double getHighest(RangeQuery &rq);
     void drawQuery();
     void drawPointsInRange();
     void inOrder(TwoDTree::Node *n);

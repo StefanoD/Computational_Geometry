@@ -108,7 +108,7 @@ void GLWidget::mousePressEvent(QMouseEvent *event)
     update();
 }
 
-void GLWidget::mouseReleaseEvent(QMouseEvent *event)
+void GLWidget::mouseReleaseEvent(QMouseEvent *)
 {
     getFirstPoint = true;
 
@@ -236,8 +236,8 @@ void GLWidget::rangeSearch(TwoDTree::Node *p, RangeQuery &rq, std::vector<QPoint
             coord = p->value.x();
         }
 
-        if (p->value.y() <= rq.p1.y() && p->value.y() >= rq.p2.y() &&
-            p->value.x() >= rq.p1.x() && p->value.x() <= rq.p2.x()) {
+        if (p->value.y() <= getHighest(rq) && p->value.y() >= getLowest(rq) &&
+            p->value.x() >= getLeftMost(rq) && p->value.x() <= getRightMost(rq)) {
             includingPoints.push_back(p->value);
         }
         if (l < coord) {
@@ -247,6 +247,26 @@ void GLWidget::rangeSearch(TwoDTree::Node *p, RangeQuery &rq, std::vector<QPoint
             rangeSearch(p->right, rq, includingPoints);
         }
     }
+}
+
+double GLWidget::getLeftMost(RangeQuery &rq)
+{
+    return qMin(rq.p1.x(), rq.p2.x());
+}
+
+double GLWidget::getRightMost(RangeQuery &rq)
+{
+    return qMax(rq.p1.x(), rq.p2.x());
+}
+
+double GLWidget::getLowest(RangeQuery &rq)
+{
+    return qMin(rq.p1.y(), rq.p2.y());
+}
+
+double GLWidget::getHighest(RangeQuery &rq)
+{
+    return qMax(rq.p1.y(), rq.p2.y());
 }
 
 void GLWidget::drawQuery()

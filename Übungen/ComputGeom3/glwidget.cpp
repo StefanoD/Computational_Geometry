@@ -41,6 +41,9 @@ void GLWidget::paintGL()
 
     // Linien zeichnen
     drawPartitions();
+
+    // DrawQuery
+    drawQuery();
 }
 
 
@@ -197,12 +200,12 @@ void GLWidget::rangeSearch(TwoDTree::Node *p, RangeQuery &rq, std::vector<QPoint
         double coord;
 
         if (p->isVertical) {
-            l = rq.leftUpper.y();
-            r = rq.rightBottom.y();
+            l = qMin(rq.rightBottom.y(), rq.leftUpper.y());
+            r = qMax(rq.rightBottom.y(), rq.leftUpper.y());
             coord = p->value.y();
         } else {
-            l = rq.leftUpper.x();
-            r = rq.rightBottom.x();
+            l = qMin(rq.rightBottom.x(), rq.leftUpper.x());
+            r = qMax(rq.rightBottom.x(), rq.leftUpper.x());
             coord = p->value.x();
         }
 
@@ -217,4 +220,39 @@ void GLWidget::rangeSearch(TwoDTree::Node *p, RangeQuery &rq, std::vector<QPoint
             rangeSearch(p->right, rq, includingPoints);
         }
     }
+}
+
+void GLWidget::drawQuery()
+{
+    RangeQuery rq(QPointF(0.25, 0.75), QPointF(0.75, -0.75));
+
+    glBegin(GL_LINE_STRIP);
+    glColor4f( 0.00f, 0.9, 0.0f, 1.0f );
+
+    glVertex2f( rq.leftUpper.x(), rq.leftUpper.y() );
+    glVertex2f( rq.rightBottom.x(), rq.leftUpper.y() );
+    glVertex2f( rq.rightBottom.x(), rq.rightBottom.y() );
+    glVertex2f( rq.leftUpper.x(), rq.rightBottom.y() );
+    glVertex2f( rq.leftUpper.x(), rq.leftUpper.y() );
+
+    glEnd();
+
+    drawPointsInRange();
+}
+
+void GLWidget::drawPointsInRange()
+{
+    RangeQuery rq(QPointF(0.25, 0.75), QPointF(0.75, -0.75));
+
+    std::vector<QPointF> includingPoints;
+    rangeSearch(twoDTree.root, rq, includingPoints);
+
+    // Draw points
+    glBegin( GL_POINTS );
+    glColor4f( 0.00f, 0.9, 0.0f, 1.0f );
+
+    for (auto &point : includingPoints) {
+        glVertex2f( point.x(), point.y() );
+    }
+    glEnd();
 }

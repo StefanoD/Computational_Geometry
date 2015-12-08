@@ -44,6 +44,8 @@ private:
 
     void drawPartitions       ();
     void rangeSearch(TwoDTree::Node* p, RangeQuery &rq, std::vector<QPointF> &includingPoints);
+    void drawQuery();
+    void drawPointsInRange();
     void inOrder(TwoDTree::Node *n);
 };
 

@@ -24,27 +24,23 @@
 #include "lessxcomparator.h"
 #include "lessycomparator.h"
 
-template <typename T>
 class TwoDTree
 {
 public:
   class Node
   {
   public:
-    T value;
+    QPointF value;
 
     Node* left = nullptr;
     Node* right = nullptr;
     Node* parent = nullptr;
     bool isVertical = true;
 
-    Node(T v = T())
+    Node(QPointF v = QPointF())
       : value(v)
     {
     }
-
-    // Kleiner-Ordnung
-    bool operator<(const T& _value) const { return value < _value; }
 
     ~Node()
     {
@@ -91,8 +87,8 @@ public:
       }
 
       QPointF median;
-      std::vector<T> partX1, partX2;
-      std::vector<T> partY1, partY2;
+      std::vector<QPointF> partX1, partX2;
+      std::vector<QPointF> partY1, partY2;
 
       if (isVertical) {
           median = (*partY)[medianIndex];

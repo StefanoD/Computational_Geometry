@@ -11,6 +11,7 @@
 #include <QFuture>
 #include <vector>
 #include "two_d.h"
+#include "rangequery.h"
 
 class GLWidget : public QGLWidget
 {
@@ -35,14 +36,15 @@ private:
     std::vector<QPointF> points;
     std::vector<QPointF> xPoints;
 
-    TwoDTree<QPointF> twoDTree;
+    TwoDTree twoDTree;
 
     double  aspectx, aspecty;
 
     bool getFirstPoint = true;
 
     void drawPartitions       ();
-    void inOrder(TwoDTree<QPointF>::Node *n);
+    void rangeSearch(TwoDTree::Node* p, RangeQuery &rq, std::vector<QPointF> &includingPoints);
+    void inOrder(TwoDTree::Node *n);
 };
 
 

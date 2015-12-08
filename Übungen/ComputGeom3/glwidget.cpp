@@ -97,7 +97,7 @@ void GLWidget::mousePressEvent(QMouseEvent *event)
     update();
 }
 
-void GLWidget::inOrder(typename TwoDTree<QPointF>::Node* n) {
+void GLWidget::inOrder(typename TwoDTree::Node* n) {
     if ( n != nullptr ) {
         inOrder(n->left);
 
@@ -105,14 +105,14 @@ void GLWidget::inOrder(typename TwoDTree<QPointF>::Node* n) {
             double mostRightXInPartition = n->value.x();
             double mostLeftXInPartition = n->value.x();
 
-            for (TwoDTree<QPointF>::Node *parent = n->parent; parent != nullptr; parent = parent->parent) {
+            for (TwoDTree::Node *parent = n->parent; parent != nullptr; parent = parent->parent) {
                 if (!parent->isVertical && parent->value.x() > mostRightXInPartition) {
                     mostRightXInPartition = parent->value.x();
                     break;
                 }
             }
 
-            for (TwoDTree<QPointF>::Node *parent = n->parent; parent != nullptr; parent = parent->parent) {
+            for (TwoDTree::Node *parent = n->parent; parent != nullptr; parent = parent->parent) {
                 if (!parent->isVertical && parent->value.x() < mostLeftXInPartition) {
                     mostLeftXInPartition = parent->value.x();
                     break;
@@ -139,14 +139,14 @@ void GLWidget::inOrder(typename TwoDTree<QPointF>::Node* n) {
             double highestYInPartition = n->value.y();
             double lowestYInPartition = n->value.y();
 
-            for (TwoDTree<QPointF>::Node *parent = n->parent; parent != nullptr; parent = parent->parent) {
+            for (TwoDTree::Node *parent = n->parent; parent != nullptr; parent = parent->parent) {
                 if (parent->isVertical && parent->value.y() > highestYInPartition) {
                     highestYInPartition = parent->value.y();
                     break;
                 }
             }
 
-            for (TwoDTree<QPointF>::Node *parent = n->parent; parent != nullptr; parent = parent->parent) {
+            for (TwoDTree::Node *parent = n->parent; parent != nullptr; parent = parent->parent) {
                 if (parent->isVertical && parent->value.y() < lowestYInPartition) {
                     lowestYInPartition = parent->value.y();
                     break;
@@ -187,4 +187,34 @@ void GLWidget::drawPartitions()
     twoDTree.insert(&xPoints, &points);
 
     inOrder(twoDTree.root);
+}
+
+void GLWidget::rangeSearch(TwoDTree::Node *p, RangeQuery &rq, std::vector<QPointF> &includingPoints)
+{
+    if (p != nullptr) {
+        double l;
+        double r;
+        double coord;
+
+        if (p->isVertical) {
+            l = rq.leftUpper.y();
+            r = rq.rightBottom.y();
+            coord = p->value.y();
+        } else {
+            l = rq.leftUpper.x();
+            r = rq.rightBottom.x();
+            coord = p->value.x();
+        }
+
+        if (p->value.y() <= rq.leftUpper.y() && p->value.y() >= rq.rightBottom.y() &&
+            p->value.x() >= rq.leftUpper.x() && p->value.x() <= rq.rightBottom.x()) {
+            includingPoints.push_back(p->value);
+        }
+        if (l < coord) {
+            rangeSearch(p->left, rq, includingPoints);
+        }
+        if (r > coord) {
+            rangeSearch(p->right, rq, includingPoints);
+        }
+    }
 }

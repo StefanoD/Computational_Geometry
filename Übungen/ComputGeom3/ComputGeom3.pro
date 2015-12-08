@@ -28,6 +28,7 @@ HEADERS +=  mainwindow.h \
             glwidget.h \
     lessxcomparator.h \
     lessycomparator.h \
-    two_d.h
+    two_d.h \
+    rangequery.h
 
 FORMS   += mainwindow.ui

@@ -78,7 +78,7 @@ public:
   {
     if (partY->size() > 0) {
 
-      int medianIndex = (partY->size()-1) / 2;
+      int medianIndex = partY->size() / 2;
 
       if (*p == nullptr) {
         *p = new Node();

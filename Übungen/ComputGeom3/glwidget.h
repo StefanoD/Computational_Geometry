@@ -23,11 +23,12 @@ signals:
     void continueRequest      ();
 
 protected:
-    void paintGL              ();
-    void initializeGL         ();
-    void resizeGL             (int width, int height);
-    void keyPressEvent        (QKeyEvent   *event);
-    void mousePressEvent      (QMouseEvent *event);
+    void paintGL              () override;
+    void initializeGL         () override;
+    void resizeGL             (int width, int height) override;
+    void keyPressEvent        (QKeyEvent   *event) override;
+    void mousePressEvent      (QMouseEvent *event) override;
+    void mouseReleaseEvent    (QMouseEvent *event) override;
 
 private:
 

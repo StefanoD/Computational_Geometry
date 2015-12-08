@@ -95,10 +95,20 @@ void GLWidget::mousePressEvent(QMouseEvent *event)
         QPointF clickedPoint = transformPosition(event->pos());
 
         points.push_back(clickedPoint);
+    } else if (event->buttons() & Qt::RightButton ) {
+
     }
 
     update();
 }
+
+void GLWidget::mouseReleaseEvent(QMouseEvent *event)
+{
+    if (event->buttons() & Qt::RightButton ) {
+
+    }
+}
+
 
 void GLWidget::inOrder(typename TwoDTree::Node* n) {
     if ( n != nullptr ) {

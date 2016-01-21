@@ -8,8 +8,10 @@
 #define GLWIDGET_H
 
 #include <QGLWidget>
-#include <QFuture>
 #include <vector>
+#include "surface_mesh/Surface_mesh.h"
+
+using namespace surface_mesh;
 
 class GLWidget : public QGLWidget
 {
@@ -31,9 +33,15 @@ private:
 
     QPointF transformPosition (const QPoint &p);
 
+    void toDelaunay(std::vector<QPointF> &sites);
+
+    Surface_mesh::Face getEnclosingTriangle(const QPointF &pr);
+
     std::vector<QPointF> points;
 
     double  aspectx, aspecty;
+
+    Surface_mesh mesh;
 };
 
 

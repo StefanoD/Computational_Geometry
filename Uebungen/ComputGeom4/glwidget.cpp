@@ -38,6 +38,19 @@ void GLWidget::paintGL()
         glVertex2f( point.x(), point.y() );
     }
     glEnd();
+
+
+    if (!mesh.empty()) {
+
+        for(const auto &face : mesh.faces()) {
+            glBegin(GL_LINE_LOOP);
+            for (const auto &vertex : mesh.vertices(face)) {
+                const Point p = mesh.position(vertex);
+                glVertex2f(p[0], p[1]);
+            }
+            glEnd();
+        }
+    }
 }
 
 
@@ -73,6 +86,58 @@ QPointF GLWidget::transformPosition(const QPoint &p)
     return QPointF( (2.0*p.x()/ width() - 1.0)*aspectx,
                     -(2.0*p.y()/height() - 1.0)*aspecty);
 }
+
+void GLWidget::toDelaunay(std::vector<QPointF> &sites)
+{
+    mesh.clear();
+
+    // Bounding Triangle
+    const Surface_mesh::Vertex v0 = mesh.add_vertex(Point(-10.0, -10.0, 0.0));
+    const Surface_mesh::Vertex v1 = mesh.add_vertex(Point(0.0, 10.0, 0.0));
+    const Surface_mesh::Vertex v2 = mesh.add_vertex(Point(10.0, -10.0, 0.0));
+
+    mesh.add_triangle(v0,v1,v2);
+
+    for (const QPointF &p : sites) {
+        const Surface_mesh::Face enclosingTriangle = getEnclosingTriangle(p);
+        const Surface_mesh::Vertex v = mesh.split(enclosingTriangle, Point(p.x(),
+                                                                           p.y(),
+                                                                           0));
+
+        for (const Surface_mesh::Halfedge &halfedge : mesh.halfedges(v)) {
+
+        }
+    }
+
+    // Delete Bounding Triangle
+    mesh.delete_vertex(v0);
+    mesh.delete_vertex(v1);
+    mesh.delete_vertex(v2);
+}
+
+Surface_mesh::Face GLWidget::getEnclosingTriangle(const QPointF &pr)
+{
+    Surface_mesh::Face enclosingTriangle;
+
+    for (const Surface_mesh::Face &face : mesh.faces()) {
+        QPolygonF triangle;
+
+        for (const Surface_mesh::Vertex &v : mesh.vertices(face)) {
+            const Point p = mesh.position(v);
+
+            triangle.append(QPointF(p[0], p[1]));
+        }
+
+        if (triangle.containsPoint(pr, Qt::OddEvenFill)) {
+            enclosingTriangle = face;
+            break;
+        }
+    }
+
+    return enclosingTriangle;
+}
+
+
 
 void GLWidget::keyPressEvent(QKeyEvent * event)
 {

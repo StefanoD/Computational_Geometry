@@ -19,9 +19,21 @@ TEMPLATE = app
 
 SOURCES += main.cpp\
         mainwindow.cpp\
-        glwidget.cpp
+        glwidget.cpp \
+        surface_mesh/IO.cpp \
+        surface_mesh/IO_obj.cpp \
+        surface_mesh/IO_off.cpp \
+        surface_mesh/IO_poly.cpp \
+        surface_mesh/IO_stl.cpp \
+        surface_mesh/Surface_mesh.cpp
+
 
 HEADERS  += mainwindow.h\
             glwidget.h \
+            surface_mesh/IO.h \
+            surface_mesh/properties.h \
+            surface_mesh/Surface_mesh.h \
+            surface_mesh/types.h \
+            surface_mesh/Vector.h
 
 FORMS    += mainwindow.ui

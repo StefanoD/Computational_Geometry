@@ -136,17 +136,15 @@ void GLWidget::legalize(const Surface_mesh::Vertex v, const Surface_mesh::Halfed
         }
 
         if (is_in_circle(p0, p1, p2, p3)) {
-            if (mesh.is_flip_ok(mesh.edge(halfedge))) {
-                const Surface_mesh::Halfedge halfedge_ji = mesh.opposite_halfedge(halfedge);
+            const Surface_mesh::Halfedge halfedge_ji = mesh.opposite_halfedge(halfedge);
 
-                const Surface_mesh::Halfedge halfedge_ik = mesh.next_halfedge(halfedge_ji);
-                const Surface_mesh::Halfedge halfedge_kj = mesh.next_halfedge(halfedge_ik);
+            const Surface_mesh::Halfedge halfedge_ik = mesh.next_halfedge(halfedge_ji);
+            const Surface_mesh::Halfedge halfedge_kj = mesh.next_halfedge(halfedge_ik);
 
-                mesh.flip(mesh.edge(halfedge));
+            mesh.flip(mesh.edge(halfedge));
 
-                legalize(v, halfedge_ik);
-                legalize(v, halfedge_kj);
-            }
+            legalize(v, halfedge_ik);
+            legalize(v, halfedge_kj);
         }
     }
 }

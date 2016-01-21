@@ -39,11 +39,13 @@ void GLWidget::paintGL()
     }
     glEnd();
 
+    toDelaunay();
 
     if (!mesh.empty()) {
 
         for(const auto &face : mesh.faces()) {
             glBegin(GL_LINE_LOOP);
+            glColor4f( 0.00f, 0.9, 0.0f, 1.0f );
             for (const auto &vertex : mesh.vertices(face)) {
                 const Point p = mesh.position(vertex);
                 glVertex2f(p[0], p[1]);
@@ -87,7 +89,7 @@ QPointF GLWidget::transformPosition(const QPoint &p)
                     -(2.0*p.y()/height() - 1.0)*aspecty);
 }
 
-void GLWidget::toDelaunay(std::vector<QPointF> &sites)
+void GLWidget::toDelaunay()
 {
     mesh.clear();
 
@@ -98,14 +100,15 @@ void GLWidget::toDelaunay(std::vector<QPointF> &sites)
 
     mesh.add_triangle(v0,v1,v2);
 
-    for (const QPointF &p : sites) {
+    for (const QPointF &p : points) {
         const Surface_mesh::Face enclosingTriangle = getEnclosingTriangle(p);
         const Surface_mesh::Vertex v = mesh.split(enclosingTriangle, Point(p.x(),
                                                                            p.y(),
                                                                            0));
 
         for (const Surface_mesh::Halfedge &halfedge : mesh.halfedges(v)) {
-
+            Surface_mesh::Halfedge next_halfedge = mesh.next_halfedge(halfedge);
+            legalize(v, next_halfedge);
         }
     }
 
@@ -113,6 +116,54 @@ void GLWidget::toDelaunay(std::vector<QPointF> &sites)
     mesh.delete_vertex(v0);
     mesh.delete_vertex(v1);
     mesh.delete_vertex(v2);
+}
+
+void GLWidget::legalize(const Surface_mesh::Vertex v, const Surface_mesh::Halfedge halfedge)
+{
+    const Point p0 = mesh.position(v);
+    const Point p1 = mesh.position(mesh.to_vertex(halfedge));
+    const Point p2 = mesh.position(mesh.from_vertex(halfedge));
+    Point p3;
+
+    const Surface_mesh::Halfedge opposite_halfedge = mesh.opposite_halfedge(halfedge);
+    const Surface_mesh::Face opposite_face = mesh.face(opposite_halfedge);
+
+    if (opposite_face.idx() != -1) {
+        for (Surface_mesh::Vertex v : mesh.vertices(mesh.face(opposite_halfedge))) {
+            if(mesh.position(v) != p1 && mesh.position(v) != p2) {
+                p3 = mesh.position(v);
+            }
+        }
+
+        if (is_in_circle(p0, p1, p2, p3)) {
+            if (mesh.is_flip_ok(mesh.edge(halfedge))) {
+                const Surface_mesh::Halfedge halfedge_ji = mesh.opposite_halfedge(halfedge);
+
+                const Surface_mesh::Halfedge halfedge_ik = mesh.next_halfedge(halfedge_ji);
+                const Surface_mesh::Halfedge halfedge_kj = mesh.next_halfedge(halfedge_ik);
+
+                mesh.flip(mesh.edge(halfedge));
+
+                legalize(v, halfedge_ik);
+                legalize(v, halfedge_kj);
+            }
+        }
+    }
+}
+
+
+
+double GLWidget::tri_area(const Point &a, const Point &b, const Point &c)
+{
+    return (b[0] - a[0]) * (c[1] - a[1]) - (b[1] - a[1]) * (c[0] - a[0]);
+}
+
+bool GLWidget::is_in_circle(const Point &a, const Point &b, const Point &c, const Point &d)
+{
+    return (a[0] * a[0] + a[1] * a[1]) * tri_area(b, c, d) -
+             (b[0] * b[0] + b[1] * b[1]) * tri_area(a, c, d) +
+             (c[0] * c[0] + c[1] * c[1]) * tri_area(a, b, d) -
+             (d[0] * d[0] + d[1] * d[1]) * tri_area(a, b, c) > 0;
 }
 
 Surface_mesh::Face GLWidget::getEnclosingTriangle(const QPointF &pr)
@@ -136,8 +187,6 @@ Surface_mesh::Face GLWidget::getEnclosingTriangle(const QPointF &pr)
 
     return enclosingTriangle;
 }
-
-
 
 void GLWidget::keyPressEvent(QKeyEvent * event)
 {

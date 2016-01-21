@@ -33,7 +33,13 @@ private:
 
     QPointF transformPosition (const QPoint &p);
 
-    void toDelaunay(std::vector<QPointF> &sites);
+    void toDelaunay();
+
+    void legalize(Surface_mesh::Vertex v, Surface_mesh::Halfedge halfedge);
+
+    double tri_area(Point const& a, Point const& b, Point const& c);
+
+    bool is_in_circle(const Point& a, const Point& b, const Point& c, Point const& d);
 
     Surface_mesh::Face getEnclosingTriangle(const QPointF &pr);
 

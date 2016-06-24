@@ -52,7 +52,8 @@ public:
   Node* root = nullptr;
 
   template <typename OrderComparator>
-  auto partitionField(std::vector<QPointF>* field, QPointF median,
+  std::tuple<std::vector<QPointF>, std::vector<QPointF>>
+  partitionField(std::vector<QPointF>* field, QPointF median,
                       OrderComparator orderSort)
   {
     std::vector<QPointF> partition1;
